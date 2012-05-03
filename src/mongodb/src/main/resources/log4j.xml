@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration debug="false" xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+    <appender name="console" class="org.apache.log4j.ConsoleAppender">
+        <param name="Target" value="System.out"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern"
+                   value="[%d{ISO8601}] %-5p %c %m %n"/>
+        </layout>
+    </appender>
+    <appender name="ycsb.log" class="org.apache.log4j.RollingFileAppender">
+        <!-- Change the log path and file name here! -->
+        <param name="File" value="ycsb.log"/>
+        <param name="Append" value="true"/>
+        <param name="MaxFileSize" value="2MB"/>
+        <param name="MaxBackupIndex" value="8"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{HH:mm:ss.SSS}  %-5p  %-40.70C{6} %x - %m%n"/>
+        </layout>
+    </appender>
+    <category name="com.yahoo">
+        <priority value="DEBUG"/>
+    </category>
+    <category name="com.yahoo">
+        <priority value="DEBUG"/>
+    </category>
+    <!--                           -->
+    <!-- setup log4j's root logger -->
+    <!--                           -->
+    <root>
+        <level value="ERROR"/>
+        <appender-ref ref="ycsb.log"/>
+    </root>
+</log4j:configuration>

@@ -1,0 +1,147 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+/**
+ * Copyright 2009 The Apache Software Foundation
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+-->
+<configuration>
+    <property>
+        <name>hbase.rootdir</name>
+        <value>hdfs://rnd-nosql-node-master:8020/hbase</value>
+        <description>
+            Points HBase at the Hadoop filesystem instance to use. It says that HBase should use the /hbase directory in
+            the HDFS whose name node is at port 8020 on rnd-nosql-node-master machine
+        </description>
+    </property>
+    <property>
+        <name>hbase.cluster.distributed</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hbase.master</name>
+        <value>rnd-nosql-node-master:60000</value>
+    </property>
+    <property>
+        <name>hbase.zookeeper.quorum</name>
+        <value>rnd-nosql-node-master</value>
+    </property>
+    <property>
+        <name>dfs.replication</name>
+        <value>1</value>
+    </property>
+
+    <property>
+        <name>hbase.regionserver.handler.count</name>
+        <value>50</value>
+        <description>
+            Count of RPC Listener instances spun up on RegionServers. Same property is used by the Master for count of
+            master handlers. Default is 10.
+        </description>
+    </property>
+    <property>
+        <name>hfile.block.cache.size</name>
+        <value>0.6</value>
+        <description>
+            Controls the amount of region server heap space to devote to the block cache. Currently defaults to 25%.
+        </description>
+    </property>
+    <property>
+        <name>hbase.hregion.max.filesize</name>
+        <value>1073741824</value>
+        <description>
+            Maximum HStoreFile size. If any one of a column families' HStoreFiles has grown to exceed this value, the
+            hosting HRegion is split in two. Default: 256M.
+        </description>
+    </property>
+    <property>
+        <name>hbase.regionserver.codecs</name>
+        <value>lzo</value>
+        <description>Test a set of codecs and fail-to-start if any code is missing or misinstalled</description>
+    </property>
+    <property>
+        <name>hbase.hregion.memstore.mslab.enabled</name>
+        <value>true</value>
+        <description>
+            Enables the MemStore-Local allocation buffer, a feature which works to prevent heap fragmentation under
+            heavy write loads.
+        </description>
+    </property>
+    <property>
+        <name>hfile.min.blocksize.size</name>
+        <value>16384</value>
+        <description>
+            Minimum store file block size. The smaller you make this, the bigger your index and the less you fetch on a
+            random-access. Set size down if you have small cells and want faster random-access of individual cells.
+            Default is 65536.
+        </description>
+    </property>
+    <property>
+        <name>hbase.hregion.memstore.block.multiplier</name>
+        <value>4</value>
+        <description>
+            Controls when to start blocking writes to keep the MemStore size sane. It defaults to 2 (multiplied by the
+            memstore.flush.size). For production clusters with lots of RAM that you monitor closely, up to something
+            like 8.
+        </description>
+    </property>
+    <property>
+        <name>hbase.regionserver.global.memstore.upperLimit</name>
+        <value>0.18</value>
+        <description>
+            Maximum size of all memstores in a region server before new updates are blocked and flushes are forced.
+            Default is 0.4 of heap.
+        </description>
+    </property>
+    <property>
+        <name>hbase.regionserver.global.memstore.lowerLimit</name>
+        <value>0.15</value>
+        <description>Default is 0.35 of heap.</description>
+    </property>
+    <property>
+        <name>hbase.zookeeper.property.maxClientCnxns</name>
+        <value>100</value>
+        <description>Limit on number of concurrent connections (at the socket level) that a single client, identified by
+            IP address, may make to a single member of the ZooKeeper ensemble. Set high to avoid zk connection issues
+            running standalone and pseudo-distributed.
+        </description>
+    </property>
+    <!--<property>-->
+    <!--<name>hbase.hregion.memstore.flush.size</name>-->
+    <!--<value>134217728</value>-->
+    <!--<description>-->
+    <!--This is 128Mb. Memstore will be flushed to disk if size of the memstore exceeds this number of bytes. Value-->
+    <!--is checked by a thread that runs every hbase.server.thread.wakefrequency-->
+    <!--</description>-->
+    <!--</property>-->
+
+    <!--</property>-->
+    <!--<property>-->
+    <!--<name>hbase.regionserver.global.memstore.lowerLimit</name>-->
+    <!--<value>0.5</value>-->
+    <!--<description>-->
+    <!--This value equal to hbase.regionserver.global.memstore.upperLimit causes the minimum possible flushing to-->
+    <!--occur when updates are blocked due to memstore limiting-->
+    <!--</description>-->
+    <!--</property>-->
+    <!--<property>-->
+    <!--<name>hbase.server.thread.wakefrequency</name>-->
+    <!--<value>1000</value>-->
+    <!--</property>-->
+</configuration>
