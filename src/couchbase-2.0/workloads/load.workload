@@ -1,0 +1,16 @@
+db=com.yahoo.ycsb.couchbase.CouchbaseClient2_0
+couchbase.hosts=rnd-nosql-node1,rnd-nosql-node2,rnd-nosql-node3,rnd-nosql-node4
+couchbase.bucket=default
+couchbase.user=
+couchbase.password=
+couchbase.timeout=60000
+table=ut
+
+fieldcount=10
+fieldlength=100
+threadcount=1
+operationcount=100000000
+recordcount=100000000
+workload=com.yahoo.ycsb.workloads.CoreWorkload
+
+requestdistribution=zipfian

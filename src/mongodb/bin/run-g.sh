@@ -4,9 +4,7 @@ BIN_HOME=./../../bin
 . $BIN_HOME/utils.sh
 . ./workload-env.sh
 
-workloads=("profile=mongodb-${MONGODB_VERSION}-g.workload target=0 operationcount=100000"
-
-           "profile=mongodb-${MONGODB_VERSION}-g.workload target=1000 operationcount=100000"
+workloads=("profile=mongodb-${MONGODB_VERSION}-g.workload target=1000 operationcount=100000"
            "profile=mongodb-${MONGODB_VERSION}-g.workload target=2000 operationcount=100000"
            "profile=mongodb-${MONGODB_VERSION}-g.workload target=3000 operationcount=100000"
            "profile=mongodb-${MONGODB_VERSION}-g.workload target=4000 operationcount=100000"

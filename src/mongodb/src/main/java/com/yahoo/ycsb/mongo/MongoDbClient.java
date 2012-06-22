@@ -264,7 +264,7 @@ public class MongoDbClient extends DB {
      * @param result A Vector of HashMaps, where each HashMap is a set field/value pairs for one record
      * @return Zero on success, a non-zero error code on error. See this class's description for a discussion of error codes.
      */
-    public int scan(String table, String startkey, int records,
+    public int scan(String table, String startKey, int limit,
                     Set<String> fields, List<Map<String, ByteIterator>> result) {
         com.mongodb.DB db = null;
         try {
@@ -272,9 +272,9 @@ public class MongoDbClient extends DB {
             db.requestStart();
             DBCollection collection = db.getCollection(table);
             // { "_id":{"$gte":startKey, "$lte":{"appId":key+"\uFFFF"}} }
-            DBObject scanRange = new BasicDBObject().append("$gte", startkey);
+            DBObject scanRange = new BasicDBObject().append("$gte", startKey);
             DBObject q = new BasicDBObject().append("_id", scanRange);
-            DBCursor cursor = collection.find(q).limit(records);
+            DBCursor cursor = collection.find(q).limit(limit);
             while (cursor.hasNext()) {
                 //toMap() returns a Map, but result.add() expects a Map<String,String>. Hence, the suppress warnings.
                 result.add(getByteIteratorMap((Map<String, String>) cursor.next().toMap()));

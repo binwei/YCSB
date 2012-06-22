@@ -16,7 +16,7 @@
     <packaging>jar</packaging>
     <profiles>
         <profile>
-            <id>mysql-sharded-5.5.23-load.workload</id>
+            <id>mysql-sharded-5.5.24-load.workload</id>
             <build>
                 <plugins>
                     <plugin>
@@ -45,7 +45,7 @@
             </build>
         </profile>
         <profile>
-            <id>mysql-sharded-5.5.23-a.workload</id>
+            <id>mysql-sharded-5.5.24-a.workload</id>
             <build>
                 <plugins>
                     <plugin>
@@ -79,7 +79,7 @@
             </build>
         </profile>
         <profile>
-            <id>mysql-sharded-5.5.23-b.workload</id>
+            <id>mysql-sharded-5.5.24-b.workload</id>
             <build>
                 <plugins>
                     <plugin>
@@ -113,7 +113,7 @@
             </build>
         </profile>
         <profile>
-            <id>mysql-sharded-5.5.23-c.workload</id>
+            <id>mysql-sharded-5.5.24-c.workload</id>
             <build>
                 <plugins>
                     <plugin>
@@ -147,7 +147,7 @@
             </build>
         </profile>
         <profile>
-            <id>mysql-sharded-5.5.23-d.workload</id>
+            <id>mysql-sharded-5.5.24-d.workload</id>
             <build>
                 <plugins>
                     <plugin>
@@ -171,6 +171,8 @@
                                         <argument>${ycsb.target}</argument>
                                         <argument>-p</argument>
                                         <argument>operationcount=${ycsb.operationcount}</argument>
+                                        <argument>-p</argument>
+                                        <argument>recordcount=${ycsb.recordcount}</argument>
                                         <argument>-s</argument>
                                     </arguments>
                                 </configuration>
@@ -181,7 +183,7 @@
             </build>
         </profile>
         <profile>
-            <id>mysql-sharded-5.5.23-e.workload</id>
+            <id>mysql-sharded-5.5.24-e.workload</id>
             <build>
                 <plugins>
                     <plugin>
@@ -205,6 +207,8 @@
                                         <argument>${ycsb.target}</argument>
                                         <argument>-p</argument>
                                         <argument>operationcount=${ycsb.operationcount}</argument>
+                                        <argument>-p</argument>
+                                        <argument>recordcount=${ycsb.recordcount}</argument>
                                         <argument>-s</argument>
                                     </arguments>
                                 </configuration>
@@ -215,7 +219,7 @@
             </build>
         </profile>
         <profile>
-            <id>mysql-sharded-5.5.23-f.workload</id>
+            <id>mysql-sharded-5.5.24-f.workload</id>
             <build>
                 <plugins>
                     <plugin>
@@ -249,7 +253,7 @@
             </build>
         </profile>
         <profile>
-            <id>mysql-sharded-5.5.23-g.workload</id>
+            <id>mysql-sharded-5.5.24-g.workload</id>
             <build>
                 <plugins>
                     <plugin>
@@ -273,6 +277,8 @@
                                         <argument>${ycsb.target}</argument>
                                         <argument>-p</argument>
                                         <argument>operationcount=${ycsb.operationcount}</argument>
+                                        <argument>-p</argument>
+                                        <argument>recordcount=${ycsb.recordcount}</argument>
                                         <argument>-s</argument>
                                     </arguments>
                                 </configuration>

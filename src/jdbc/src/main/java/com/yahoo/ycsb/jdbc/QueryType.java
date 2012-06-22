@@ -5,5 +5,6 @@ enum QueryType {
     DELETE,
     READ,
     UPDATE,
-    SCAN
+    SCAN,
+    RANGE_SCAN
 }

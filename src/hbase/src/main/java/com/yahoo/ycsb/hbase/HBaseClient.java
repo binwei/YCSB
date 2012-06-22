@@ -132,7 +132,7 @@ public class HBaseClient extends DB implements HBaseClientProperties {
                 HTable hTable = new HTable(config, table);
                 // 2 suggestions from http://ryantwopointoh.blogspot.com/2009/01/performance-of-hbase-importing.html
                 hTable.setAutoFlush(false);
-                hTable.setWriteBufferSize(1024 * 1024 * 12);
+                hTable.setWriteBufferSize(WRITE_BUFFER_SIZE);
                 this.hTable = hTable;
                 this.table = table;
             }
@@ -145,12 +145,12 @@ public class HBaseClient extends DB implements HBaseClientProperties {
      *
      * @param table       The name of the table
      * @param startKey    The record key of the first record to read.
-     * @param records The number of records to read
+     * @param limit The number of records to read
      * @param fields      The list of fields to read, or null for all of them
      * @param result      A Vector of HashMaps, where each HashMap is a set field/value pairs for one record
      * @return Zero on success, a non-zero error code on error
      */
-    public int scan(String table, String startKey, int records, Set<String> fields, List<Map<String, ByteIterator>> result) {
+    public int scan(String table, String startKey, int limit, Set<String> fields, List<Map<String, ByteIterator>> result) {
         try {
             initHTable(table);
         } catch (IOException e) {
@@ -159,7 +159,7 @@ public class HBaseClient extends DB implements HBaseClientProperties {
         Scan scan = new Scan(Bytes.toBytes(startKey));
         //HBase has no record limit.  Here, assume recordCount is small enough to bring back in one call.
         //We get back recordCount records
-        scan.setCaching(records);
+        scan.setCaching(limit);
 
         //add specified fields or else all fields
         if (fields == null) {
@@ -192,7 +192,7 @@ public class HBaseClient extends DB implements HBaseClientProperties {
                 //add rowResult to result vector
                 result.add(rowResult);
                 numResults++;
-                if (numResults >= records) //if hit recordCount, bail out
+                if (numResults >= limit) //if hit recordCount, bail out
                 {
                     break;
                 }

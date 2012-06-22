@@ -183,12 +183,12 @@ public class RiakClient extends DB implements RangeScanOperation, RiakClientProp
     }
 
     @Override
-    public int scan(String table, String startKey, int records, Set<String> fields, List<Map<String, ByteIterator>> result) {
+    public int scan(String table, String startKey, int limit, Set<String> fields, List<Map<String, ByteIterator>> result) {
         throw new RiakClientException("Riak scan is not supported");
     }
 
     @Override
-    public int scan(String table, String startKey, String endKey, Set<String> fields, List<Map<String, ByteIterator>> results) {
+    public int scan(String table, String startKey, String endKey, int limit, Set<String> fields, List<Map<String, ByteIterator>> results) {
         try {
             IndexMapReduce scan = new IndexMapReduce(client, new BinRangeQuery(KeyIndex.index, table, startKey, endKey));
             scan.addMapPhase(MAP_FUNCTION);
@@ -304,7 +304,7 @@ public class RiakClient extends DB implements RangeScanOperation, RiakClientProp
         System.out.println(String.format("[%1$s]->[%2$s]", key, readResult));
 
         List<Map<String, ByteIterator>> scanResult = new ArrayList<Map<String, ByteIterator>>();
-        client.scan(table, startKey, endKey, null, scanResult);
+        client.scan(table, startKey, endKey, 100, null, scanResult);
         client.cleanup();
     }
 }

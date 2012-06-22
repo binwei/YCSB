@@ -1,9 +1,10 @@
 package com.yahoo.ycsb.jdbc;
 
+import com.yahoo.ycsb.ByteArrayByteIterator;
 import com.yahoo.ycsb.ByteIterator;
 import com.yahoo.ycsb.DB;
 import com.yahoo.ycsb.DBException;
-import com.yahoo.ycsb.StringByteIterator;
+import com.yahoo.ycsb.workloads.RangeScanOperation;
 
 import java.sql.*;
 import java.util.*;
@@ -13,7 +14,7 @@ import java.util.concurrent.ConcurrentMap;
 import static com.yahoo.ycsb.jdbc.QueryType.*;
 import static com.yahoo.ycsb.workloads.CoreWorkload.*;
 
-public abstract class BaseJdbcClient extends DB implements JdbcClientProperties {
+public abstract class BaseJdbcClient extends DB implements RangeScanOperation, JdbcClientProperties {
 
     protected List<Connection> connections;
     protected ConcurrentMap<QueryDescriptor, PreparedStatement> statements;
@@ -25,8 +26,6 @@ public abstract class BaseJdbcClient extends DB implements JdbcClientProperties 
     protected abstract Connection getConnection(QueryDescriptor descriptor);
 
     protected abstract QueryDescriptor createQueryDescriptor(QueryType type, String table, String key, int parameters);
-
-    protected abstract QueryDescriptor[] createQueryDescriptors();
 
     /**
      * Initialize the database connection and set it up for sending requests to the database.
@@ -48,7 +47,6 @@ public abstract class BaseJdbcClient extends DB implements JdbcClientProperties 
 
         try {
             initConnections();
-            cachePreparedStatements();
         } catch (ClassNotFoundException e) {
             System.err.println("Can't find driver class: " + e);
             throw new DBException(e);
@@ -75,12 +73,6 @@ public abstract class BaseJdbcClient extends DB implements JdbcClientProperties 
             connections.add(connection);
         }
         System.out.println("Using " + connections.size() + " nodes");
-    }
-
-    protected void cachePreparedStatements() throws SQLException {
-        for (QueryDescriptor descriptor : createQueryDescriptors()) {
-            createPreparedStatement(descriptor);
-        }
     }
 
     protected String createInsertQuery(QueryDescriptor descriptor) {
@@ -139,7 +131,18 @@ public abstract class BaseJdbcClient extends DB implements JdbcClientProperties 
         query.append(" WHERE ");
         query.append(primaryKey);
         query.append(" >= ");
-        query.append("?;");
+        query.append("? LIMIT 0, ?;");
+        return query.toString();
+    }
+
+    protected String createRangeScanQuery(QueryDescriptor descriptor) {
+        StringBuilder query = new StringBuilder("SELECT * FROM ");
+        query.append(descriptor.getTable());
+        query.append(" WHERE ");
+        query.append(primaryKey);
+        query.append(" >= ? AND ");
+        query.append(primaryKey);
+        query.append(" <= ? LIMIT 0, ?;");
         return query.toString();
     }
 
@@ -161,9 +164,13 @@ public abstract class BaseJdbcClient extends DB implements JdbcClientProperties 
             case SCAN:
                 query = createScanQuery(descriptor);
                 break;
+            case RANGE_SCAN:
+                query = createRangeScanQuery(descriptor);
+                break;
         }
         return query;
     }
+
 
     protected PreparedStatement createPreparedStatement(QueryDescriptor descriptor)
             throws SQLException {
@@ -177,6 +184,19 @@ public abstract class BaseJdbcClient extends DB implements JdbcClientProperties 
         return statement;
     }
 
+    protected Set<String> getResultSetColumns(Set<String> fields, ResultSet resultSet) throws SQLException {
+        if (fields == null) {
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            int columnCount = metaData.getColumnCount();
+            fields = new HashSet<String>();
+            for (int i = 1; i <= columnCount; i++) {
+                fields.add(metaData.getColumnName(i));
+            }
+            fields.remove(primaryKey);
+        }
+        return fields;
+    }
+
     @Override
     public int read(String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
         try {
@@ -188,11 +208,9 @@ public abstract class BaseJdbcClient extends DB implements JdbcClientProperties 
                 resultSet.close();
                 return ERROR;
             }
-            if (result != null && fields != null) {
-                for (String field : fields) {
-                    String value = resultSet.getString(field);
-                    result.put(field, new StringByteIterator(value));
-                }
+            Set<String> columns = getResultSetColumns(fields, resultSet);
+            for (String column : columns) {
+                result.put(column, new ByteArrayByteIterator(resultSet.getBytes(column)));
             }
             resultSet.close();
             return OK;
@@ -203,21 +221,45 @@ public abstract class BaseJdbcClient extends DB implements JdbcClientProperties 
     }
 
     @Override
-    public int scan(String table, String startKey, int records, Set<String> fields, List<Map<String, ByteIterator>> result) {
+    public int scan(String table, String startKey, int limit, Set<String> fields, List<Map<String, ByteIterator>> result) {
         try {
-            QueryDescriptor descriptor = createQueryDescriptor(SCAN, table, startKey, 1);
+            QueryDescriptor descriptor = createQueryDescriptor(SCAN, table, startKey, 2);
             PreparedStatement statement = createPreparedStatement(descriptor);
             statement.setString(1, startKey);
+            statement.setInt(2, limit);
             ResultSet resultSet = statement.executeQuery();
-            for (int i = 0; i < records && resultSet.next(); i++) {
-                if (result != null && fields != null) {
-                    HashMap<String, ByteIterator> values = new HashMap<String, ByteIterator>();
-                    for (String field : fields) {
-                        String value = resultSet.getString(field);
-                        values.put(field, new StringByteIterator(value));
-                    }
-                    result.add(values);
+            Set<String> columns = getResultSetColumns(fields, resultSet);
+            for (int i = 0; i < limit && resultSet.next(); i++) {
+                Map<String, ByteIterator> values = new HashMap<String, ByteIterator>();
+                for (String column : columns) {
+                    values.put(column, new ByteArrayByteIterator(resultSet.getBytes(column)));
                 }
+                result.add(values);
+            }
+            resultSet.close();
+            return OK;
+        } catch (SQLException e) {
+            System.err.println("Error in processing scan of table: " + table + e);
+            return ERROR;
+        }
+    }
+
+    @Override
+    public int scan(String table, String startKey, String endKey, int limit, Set<String> fields, List<Map<String, ByteIterator>> result) {
+        try {
+            QueryDescriptor descriptor = createQueryDescriptor(RANGE_SCAN, table, startKey, 2);
+            PreparedStatement statement = createPreparedStatement(descriptor);
+            statement.setString(1, startKey);
+            statement.setString(2, endKey);
+            statement.setInt(3, limit);
+            ResultSet resultSet = statement.executeQuery();
+            Set<String> columns = getResultSetColumns(fields, resultSet);
+            while (resultSet.next()) {
+                Map<String, ByteIterator> values = new HashMap<String, ByteIterator>();
+                for (String column : columns) {
+                    values.put(column, new ByteArrayByteIterator(resultSet.getBytes(column)));
+                }
+                result.add(values);
             }
             resultSet.close();
             return OK;

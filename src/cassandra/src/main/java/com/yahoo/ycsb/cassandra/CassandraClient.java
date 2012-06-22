@@ -191,13 +191,13 @@ public class CassandraClient extends DB implements CassandraClientProperties {
      *
      * @param table       The name of the table
      * @param startKey    The record key of the first record to read.
-     * @param records The number of records to read
+     * @param limit The number of records to read
      * @param fields      The list of fields to read, or null for all of them
      * @param result      A Vector of HashMaps, where each HashMap is a set field/value
      *                    pairs for one record
      * @return Zero on success, a non-zero error code on error
      */
-    public int scan(String table, String startKey, int records, Set<String> fields,
+    public int scan(String table, String startKey, int limit, Set<String> fields,
                     List<Map<String, ByteIterator>> result) {
         if (!StringUtils.equals(this.table, table)) {
             try {
@@ -222,7 +222,7 @@ public class CassandraClient extends DB implements CassandraClientProperties {
                     }
                     predicate = new SlicePredicate().setColumn_names(fieldsList);
                 }
-                KeyRange keyRange = new KeyRange().setStart_key(startKey.getBytes("UTF-8")).setEnd_key(new byte[]{}).setCount(records);
+                KeyRange keyRange = new KeyRange().setStart_key(startKey.getBytes("UTF-8")).setEnd_key(new byte[]{}).setCount(limit);
                 List<KeySlice> results = client.get_range_slices(parent, predicate, keyRange, ConsistencyLevel.ONE);
                 if (debug) {
                     System.out.println("Scanning start key: " + startKey);

@@ -22,7 +22,7 @@
 #   Request distribution: zipfian
 
 db=com.yahoo.ycsb.jdbc.ShardedByKeyJdbcClient
-jdbc.url=jdbc:mysql://rnd-nosql-node1/user_database,jdbc:mysql://rnd-nosql-node2/user_database,jdbc:mysql://rnd-nosql-node3/user_database,jdbc:mysql://rnd-nosql-node4/user_database
+jdbc.url=jdbc:mysql://rnd-nosql-cbnode1/user_database,jdbc:mysql://rnd-nosql-cbnode2/user_database,jdbc:mysql://rnd-nosql-cbnode3/user_database,jdbc:mysql://rnd-nosql-cbnode4/user_database
 jdbc.driverClassName=com.mysql.jdbc.Driver
 table=user_table
 
@@ -34,7 +34,6 @@ recordcount=100000000
 workload=com.yahoo.ycsb.workloads.CoreWorkload
 
 readallfields=true
-
 readproportion=0.95
 updateproportion=0.05
 scanproportion=0

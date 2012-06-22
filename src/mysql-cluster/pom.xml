@@ -64,8 +64,7 @@
                                         <argument>-P</argument>
                                         <argument>${basedir}/workloads/a.workload</argument>
                                         <argument>-t</argument>
-                                        <argument>-target</argument>
-                                                                               
+                                        <argument>-target</argument>                              
                                         <argument>${ycsb.target}</argument>
                                         <argument>-p</argument>
                                         <argument>operationcount=${ycsb.operationcount}</argument>
@@ -98,8 +97,7 @@
                                         <argument>-P</argument>
                                         <argument>${basedir}/workloads/b.workload</argument>
                                         <argument>-t</argument>
-                                        <argument>-target</argument>
-                                                                               
+                                        <argument>-target</argument>                              
                                         <argument>${ycsb.target}</argument>
                                         <argument>-p</argument>
                                         <argument>operationcount=${ycsb.operationcount}</argument>
@@ -132,8 +130,7 @@
                                         <argument>-P</argument>
                                         <argument>${basedir}/workloads/c.workload</argument>
                                         <argument>-t</argument>
-                                        <argument>-target</argument>
-                                                                               
+                                        <argument>-target</argument>                              
                                         <argument>${ycsb.target}</argument>
                                         <argument>-p</argument>
                                         <argument>operationcount=${ycsb.operationcount}</argument>
@@ -166,11 +163,12 @@
                                         <argument>-P</argument>
                                         <argument>${basedir}/workloads/d.workload</argument>
                                         <argument>-t</argument>
-                                        <argument>-target</argument>
-                                                                               
+                                        <argument>-target</argument>                              
                                         <argument>${ycsb.target}</argument>
                                         <argument>-p</argument>
                                         <argument>operationcount=${ycsb.operationcount}</argument>
+                                        <argument>-p</argument>
+                                        <argument>recordcount=${ycsb.recordcount}</argument>
                                         <argument>-s</argument>
                                     </arguments>
                                 </configuration>
@@ -200,11 +198,12 @@
                                         <argument>-P</argument>
                                         <argument>${basedir}/workloads/e.workload</argument>
                                         <argument>-t</argument>
-                                        <argument>-target</argument>
-                                                                               
+                                        <argument>-target</argument>                              
                                         <argument>${ycsb.target}</argument>
                                         <argument>-p</argument>
                                         <argument>operationcount=${ycsb.operationcount}</argument>
+                                        <argument>-p</argument>
+                                        <argument>recordcount=${ycsb.recordcount}</argument>
                                         <argument>-s</argument>
                                     </arguments>
                                 </configuration>
@@ -234,8 +233,7 @@
                                         <argument>-P</argument>
                                         <argument>${basedir}/workloads/f.workload</argument>
                                         <argument>-t</argument>
-                                        <argument>-target</argument>
-                                                                               
+                                        <argument>-target</argument>                              
                                         <argument>${ycsb.target}</argument>
                                         <argument>-p</argument>
                                         <argument>operationcount=${ycsb.operationcount}</argument>
@@ -268,11 +266,12 @@
                                         <argument>-P</argument>
                                         <argument>${basedir}/workloads/g.workload</argument>
                                         <argument>-t</argument>
-                                        <argument>-target</argument>
-                                                                               
+                                        <argument>-target</argument>                              
                                         <argument>${ycsb.target}</argument>
                                         <argument>-p</argument>
                                         <argument>operationcount=${ycsb.operationcount}</argument>
+                                        <argument>-p</argument>
+                                        <argument>recordcount=${ycsb.recordcount}</argument>
                                         <argument>-s</argument>
                                     </arguments>
                                 </configuration>

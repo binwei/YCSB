@@ -15,7 +15,8 @@
         <module>mongodb</module>
         <module>hbase</module>
         <module>riak</module>
-		<module>couchbase</module>
+		<module>couchbase-1.8</module>
+		<module>couchbase-2.0</module>
         <module>mysql-cluster</module>
         <module>mysql-sharded</module>
         <module>jdbc</module>
@@ -23,6 +24,8 @@
     <properties>
         <ycsb.target>0</ycsb.target>
         <ycsb.operationcount>10000</ycsb.operationcount>
+        <ycsb.insertstart>0</ycsb.insertstart>
+        <ycsb.recordcount>0</ycsb.recordcount>
     </properties>
     <build>
         <plugins>

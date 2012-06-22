@@ -27,7 +27,7 @@
 # key, and then request a number of records; this works fine even for hashed insertion.
 
 db=com.yahoo.ycsb.jdbc.ShardedByKeyJdbcClient
-jdbc.url=jdbc:mysql://rnd-nosql-node1/user_database,jdbc:mysql://rnd-nosql-node2/user_database,jdbc:mysql://rnd-nosql-node3/user_database,jdbc:mysql://rnd-nosql-node4/user_database
+jdbc.url=jdbc:mysql://rnd-nosql-cbnode1/user_database,jdbc:mysql://rnd-nosql-cbnode2/user_database,jdbc:mysql://rnd-nosql-cbnode3/user_database,jdbc:mysql://rnd-nosql-cbnode4/user_database
 jdbc.driverClassName=com.mysql.jdbc.Driver
 table=user_table
 
@@ -37,8 +37,7 @@ threadcount=20
 operationcount=10000
 recordcount=100000000
 workload=com.yahoo.ycsb.workloads.CoreWorkload
-
-readallfields=true
+#workload=com.yahoo.ycsb.workloads.RangeScanWorkload
 
 readproportion=0
 updateproportion=0

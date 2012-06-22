@@ -22,7 +22,7 @@
 #   Request distribution: zipfian
 
 db=com.yahoo.ycsb.mongo.MongoDbClient
-mongodb.urls=rnd-nosql-node-router
+mongodb.urls=rnd-nosql-node-master
 mongodb.database=UserDatabase
 table=UserTable
 

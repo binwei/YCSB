@@ -13,10 +13,9 @@
     <artifactId>core</artifactId>
     <version>1.0</version>
     <modelVersion>4.0.0</modelVersion>
-    <description>maven pom for ycsb</description>
     <packaging>jar</packaging>
+
     <build>
-        <sourceDirectory>src</sourceDirectory>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

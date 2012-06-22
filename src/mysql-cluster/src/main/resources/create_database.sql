@@ -1,18 +1,15 @@
 drop database if exists user_database;
-
 create database user_database;
-
 grant all privileges on user_database.* to ''@'%';
 
 use user_database;
 
 drop table if exists user_table;
-
-
 create table user_table(
-  ycsb_key varchar(255) primary key,
-  field1 varchar(255), field2 varchar(255), field3 varchar(255), field4 varchar(255), field5 varchar(255),
-  field6 varchar(255), field7 varchar(255), field8 varchar(255), field9 varchar(255), field10 varchar(255))
+  ycsb_key varchar(32) primary key,
+  field1 varchar(100), field2 varchar(100), field3 varchar(100), field4 varchar(100),
+  field5 varchar(100), field6 varchar(100), field7 varchar(100), field8 varchar(100),
+  field9 varchar(100), field10 varchar(100))
   max_rows=1000000000 engine=ndbcluster partition by key(ycsb_key);
 
 -- initial size 1073741824 bytes or 1 gigabytes, undo buffer size 134217728 bytes or 128 megabytes
