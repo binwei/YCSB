@@ -20,6 +20,8 @@ import com.yahoo.ycsb.Utils;
 
 import java.util.Random;
 
+import static java.lang.String.format;
+
 /**
  * Generate integers resembling a hotspot distribution where x% of operations
  * access y% of data items. The parameters specify the bounds for the numbers,
@@ -32,56 +34,53 @@ import java.util.Random;
  */
 public class HotspotIntegerGenerator extends IntegerGenerator {
 
-    private final int lowerBound;
-    private final int upperBound;
-    private final int hotInterval;
-    private final int coldInterval;
-    private final double hotsetFraction;
-    private final double hotOpnFraction;
+    protected int lowerBound;
+    protected int upperBound;
+    protected int hotInterval;
+    protected int coldInterval;
+    protected double hotDataFraction;
+    protected double hotOperationFraction;
+    protected boolean init;
 
     /**
-     * Create a generator for Hotspot distributions.
+     * Create a generator for hotspot distributions.
      *
-     * @param lowerBound     lower bound of the distribution.
-     * @param upperBound     upper bound of the distribution.
-     * @param hotsetFraction percentage of data item
-     * @param hotOpnFraction percentage of operations accessing the hot set.
+     * @param lowerBound        lower bound of the distribution.
+     * @param upperBound        upper bound of the distribution.
+     * @param hotDataFraction    percentage of data item
+     * @param hotOperationFraction percentage of operations accessing the hot set.
      */
     public HotspotIntegerGenerator(int lowerBound, int upperBound,
-                                   double hotsetFraction, double hotOpnFraction) {
-        if (hotsetFraction < 0.0 || hotsetFraction > 1.0) {
-            System.err.println("Hotset fraction out of range. Setting to 0.0");
-            hotsetFraction = 0.0;
+                                   double hotDataFraction, double hotOperationFraction) {
+        setLowerBound(lowerBound);
+        setUpperBound(upperBound);
+        setHotDataFraction(hotDataFraction);
+        setHotOperationFraction(hotOperationFraction);
+        init();
+    }
+
+    protected void init() {
+        if (init) {
+            if (lowerBound > upperBound) {
+                throw new IllegalStateException(format("Lower bound is greater than upper bound %1$d > %2$d", lowerBound, upperBound));
+            }
+            int interval = upperBound - lowerBound;
+            this.hotInterval = (int) (interval * hotDataFraction);
+            this.coldInterval = interval - hotInterval;
+            this.init = false;
         }
-        if (hotOpnFraction < 0.0 || hotOpnFraction > 1.0) {
-            System.err.println("Hot operation fraction out of range. Setting to 0.0");
-            hotOpnFraction = 0.0;
-        }
-        if (lowerBound > upperBound) {
-            System.err.println("Upper bound of Hotspot generator smaller than the lower bound. " +
-                    "Swapping the values.");
-            int temp = lowerBound;
-            lowerBound = upperBound;
-            upperBound = temp;
-        }
-        this.lowerBound = lowerBound;
-        this.upperBound = upperBound;
-        this.hotsetFraction = hotsetFraction;
-        int interval = upperBound - lowerBound + 1;
-        this.hotInterval = (int) (interval * hotsetFraction);
-        this.coldInterval = interval - hotInterval;
-        this.hotOpnFraction = hotOpnFraction;
     }
 
     @Override
     public int nextInt() {
-        int value = 0;
+        init();
         Random random = Utils.random();
-        if (random.nextDouble() < hotOpnFraction) {
-            // Choose a value from the hot set.
+        int value;
+        if (random.nextDouble() < hotOperationFraction) {
+            // Choose a value from the hot set
             value = lowerBound + random.nextInt(hotInterval);
         } else {
-            // Choose a value from the cold set.
+            // Choose a value from the cold set
             value = lowerBound + hotInterval + random.nextInt(coldInterval);
         }
         setLastInt(value);
@@ -95,6 +94,11 @@ public class HotspotIntegerGenerator extends IntegerGenerator {
         return lowerBound;
     }
 
+    public void setLowerBound(int lowerBound) {
+        this.lowerBound = lowerBound;
+        this.init = true;
+    }
+
     /**
      * @return the upperBound
      */
@@ -102,23 +106,43 @@ public class HotspotIntegerGenerator extends IntegerGenerator {
         return upperBound;
     }
 
+    public void setUpperBound(int upperBound) {
+        this.upperBound = upperBound;
+        this.init = true;
+    }
+
     /**
-     * @return the hotsetFraction
+     * @return the hotSetFraction
      */
-    public double getHotsetFraction() {
-        return hotsetFraction;
+    public double getHotDataFraction() {
+        return hotDataFraction;
+    }
+
+    public void setHotOperationFraction(double hotOperationFraction) {
+        if (hotOperationFraction < 0.0 || hotOperationFraction > 1.0) {
+            throw new IllegalArgumentException("Hot operation fraction %1$f out of range [0, 1]" + hotOperationFraction);
+        }
+        this.hotOperationFraction = hotOperationFraction;
     }
 
     /**
      * @return the hotOpnFraction
      */
-    public double getHotOpnFraction() {
-        return hotOpnFraction;
+    public double getHotOperationFraction() {
+        return hotOperationFraction;
+    }
+
+    public void setHotDataFraction(double hotDataFraction) {
+        if (hotDataFraction < 0.0 || hotDataFraction > 1.0) {
+            throw new IllegalArgumentException(format("Hot set fraction %1$f is out of range [0, 1]", hotDataFraction));
+        }
+        this.hotDataFraction = hotDataFraction;
+        this.init = true;
     }
 
     @Override
     public double mean() {
-        return hotOpnFraction * (lowerBound + hotInterval / 2.0)
-                + (1 - hotOpnFraction) * (lowerBound + hotInterval + coldInterval / 2.0);
+        return hotOperationFraction * (lowerBound + hotInterval / 2.0)
+                + (1 - hotOperationFraction) * (lowerBound + hotInterval + coldInterval / 2.0);
     }
 }

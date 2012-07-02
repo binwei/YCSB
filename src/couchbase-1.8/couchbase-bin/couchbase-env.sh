@@ -1,6 +1,5 @@
 #!/bin/sh
-HOSTS=rnd-nosql-cbnode1,rnd-nosql-cbnode2,rnd-nosql-cbnode3,rnd-nosql-cbnode4
-# PRIMARY_HOST=rnd-nosql-node1
+HOSTS=ycsb-node1,ycsb-node2,ycsb-node3,ycsb-node4
 
 DEFAULT_PORT=8091
 CLUSTER_RAMSIZE=13000

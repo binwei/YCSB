@@ -18,7 +18,7 @@ public interface CouchbaseClientProperties {
 
     final String TIMEOUT_PROPERTY = "couchbase.timeout";
 
-    final long SHUTDOWN_TIMEOUT_MILLIS = 3000;
+    final long SHUTDOWN_TIMEOUT_MILLIS = 30000;
 
     final int OBJECT_EXPIRATION_TIME = Integer.MAX_VALUE;
 

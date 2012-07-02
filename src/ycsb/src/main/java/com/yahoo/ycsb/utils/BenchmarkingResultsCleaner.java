@@ -83,8 +83,8 @@ public class BenchmarkingResultsCleaner {
     public static void main(String[] args) throws Exception {
         BenchmarkingResultsCleaner cleaner;
         args = new String[]{
-                "/Users/tazija/Downloads/ycsb/mongodb/20-threads-raid",
-                "/Users/tazija/Downloads/ycsb/mongodb/20-threads-raid-cleaned"};
+                "/Users/tazija/Downloads/ycsb",
+                "/Users/tazija/Downloads/ycsb-cleaned"};
         cleaner = new BenchmarkingResultsCleaner(args);
         cleaner.clean();
     }

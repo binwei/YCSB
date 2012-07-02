@@ -26,6 +26,11 @@ couchbase.password=
 couchbase.timeout=60000
 table=ut
 
+#requestdistribution=slidinghotspot
+#hotspotslidingspeed=2
+#hotspotdatafraction=0.2
+#hotspotoperationfraction=0.97
+
 fieldcount=10
 fieldlength=100
 threadcount=20

@@ -22,8 +22,9 @@ import com.yahoo.ycsb.measurements.exporter.MeasurementsExporter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
-
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Take measurements and maintain a histogram of a given metric, such as READ LATENCY.
@@ -31,48 +32,64 @@ import java.util.Properties;
  * @author cooperb
  */
 public class OneMeasurementHistogram extends OneMeasurement {
+
     public static final String BUCKETS = "histogram.buckets";
     public static final String BUCKETS_DEFAULT = "1000";
+    public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#.##");
 
-    int _buckets;
+    int buckets;
     int[] histogram;
-    int histogramoverflow;
+    int histogramOverflow;
     int operations;
-    long totallatency;
+    long totalLatency;
 
     //keep a windowed version of these stats for printing status
-    int windowoperations;
-    long windowtotallatency;
+    int windowOperations;
+    long windowTotalLatency;
 
     int min;
     int max;
-    HashMap<Integer, int[]> returncodes;
+    Map<Integer, AtomicInteger> returnCodes;
+    Map<Integer, LatencyPerBucket> latencyPerBucketMap;
+
+    class LatencyPerBucket {
+        double totalLatency;
+        int measurements;
+
+        public void measure(int latency) {
+            totalLatency += latency;
+            measurements++;
+        }
+
+        public double getAverageLatency() {
+            return totalLatency / measurements;
+        }
+    }
 
     public OneMeasurementHistogram(String name, Properties props) {
         super(name);
-        _buckets = Integer.parseInt(props.getProperty(BUCKETS, BUCKETS_DEFAULT));
-        histogram = new int[_buckets];
-        histogramoverflow = 0;
+        buckets = Integer.parseInt(props.getProperty(BUCKETS, BUCKETS_DEFAULT));
+        histogram = new int[buckets];
+        histogramOverflow = 0;
         operations = 0;
-        totallatency = 0;
-        windowoperations = 0;
-        windowtotallatency = 0;
+        totalLatency = 0;
+        windowOperations = 0;
+        windowTotalLatency = 0;
         min = -1;
         max = -1;
-        returncodes = new HashMap<Integer, int[]>();
+        returnCodes = new HashMap<Integer, AtomicInteger>();
+        latencyPerBucketMap = new HashMap<Integer, LatencyPerBucket>();
     }
 
     /* (non-Javadoc)
       * @see com.yahoo.ycsb.OneMeasurement#reportReturnCode(int)
       */
     public synchronized void reportReturnCode(int code) {
-        Integer Icode = code;
-        if (!returncodes.containsKey(Icode)) {
-            int[] val = new int[1];
-            val[0] = 0;
-            returncodes.put(Icode, val);
+        AtomicInteger count = returnCodes.get(code);
+        if (count == null) {
+            returnCodes.put(code, count = new AtomicInteger());
         }
-        returncodes.get(Icode)[0]++;
+        count.incrementAndGet();
     }
 
 
@@ -80,15 +97,21 @@ public class OneMeasurementHistogram extends OneMeasurement {
       * @see com.yahoo.ycsb.OneMeasurement#measure(int)
       */
     public synchronized void measure(int latency) {
-        if (latency / 1000 >= _buckets) {
-            histogramoverflow++;
+        int bucket = latency / 1000;
+        if (bucket >= buckets) {
+            histogramOverflow++;
         } else {
-            histogram[latency / 1000]++;
+            histogram[bucket]++;
+            LatencyPerBucket latencyPerBucket = latencyPerBucketMap.get(bucket);
+            if (latencyPerBucket == null) {
+                latencyPerBucketMap.put(bucket, latencyPerBucket = new LatencyPerBucket());
+            }
+            latencyPerBucket.measure(latency);
         }
         operations++;
-        totallatency += latency;
-        windowoperations++;
-        windowtotallatency += latency;
+        totalLatency += latency;
+        windowOperations++;
+        windowTotalLatency += latency;
 
         if ((min < 0) || (latency < min)) {
             min = latency;
@@ -99,51 +122,45 @@ public class OneMeasurementHistogram extends OneMeasurement {
         }
     }
 
-
     @Override
     public void exportMeasurements(MeasurementsExporter exporter) throws IOException {
         exporter.write(getName(), "Operations", operations);
-        exporter.write(getName(), "AverageLatency(us)", (((double) totallatency) / ((double) operations)));
+        exporter.write(getName(), "AverageLatency(us)", (((double) totalLatency) / ((double) operations)));
         exporter.write(getName(), "MinLatency(us)", min);
         exporter.write(getName(), "MaxLatency(us)", max);
 
-        int opcounter = 0;
+        int counter = 0;
         boolean done95th = false;
-        for (int i = 0; i < _buckets; i++) {
-            opcounter += histogram[i];
-            if ((!done95th) && (((double) opcounter) / ((double) operations) >= 0.95)) {
-                exporter.write(getName(), "95thPercentileLatency(ms)", i);
+        for (int bucket = 0; bucket < buckets; bucket++) {
+            counter += histogram[bucket];
+            if ((!done95th) && (((double) counter) / ((double) operations) >= 0.95)) {
+                exporter.write(getName(), "95thPercentileLatency(us)", latencyPerBucketMap.get(bucket).getAverageLatency());
                 done95th = true;
             }
-            if (((double) opcounter) / ((double) operations) >= 0.99) {
-                exporter.write(getName(), "99thPercentileLatency(ms)", i);
+            if (((double) counter) / ((double) operations) >= 0.99) {
+                exporter.write(getName(), "99thPercentileLatency(us)", latencyPerBucketMap.get(bucket).getAverageLatency());
                 break;
             }
         }
-
-        for (Integer I : returncodes.keySet()) {
-            int[] val = returncodes.get(I);
-            exporter.write(getName(), "Return=" + I, val[0]);
+        for (Map.Entry<Integer, AtomicInteger> entry : returnCodes.entrySet()) {
+            exporter.write(getName(), "Return=" + entry.getKey(), entry.getValue().get());
         }
-
-        for (int i = 0; i < _buckets; i++) {
+        for (int i = 0; i < buckets; i++) {
             if (histogram[i] > 0) {
                 exporter.write(getName(), Integer.toString(i), histogram[i]);
             }
         }
-        exporter.write(getName(), ">" + _buckets, histogramoverflow);
+        exporter.write(getName(), ">" + buckets, histogramOverflow);
     }
 
     @Override
     public String getSummary() {
-        if (windowoperations == 0) {
+        if (windowOperations == 0) {
             return "";
         }
-        DecimalFormat d = new DecimalFormat("#.##");
-        double report = ((double) windowtotallatency) / ((double) windowoperations);
-        windowtotallatency = 0;
-        windowoperations = 0;
-        return "[" + getName() + " AverageLatency(us)=" + d.format(report) + "]";
+        double report = ((double) windowTotalLatency) / ((double) windowOperations);
+        windowTotalLatency = 0;
+        windowOperations = 0;
+        return "[" + getName() + " AverageLatency(us)=" + DECIMAL_FORMAT.format(report) + "]";
     }
-
 }

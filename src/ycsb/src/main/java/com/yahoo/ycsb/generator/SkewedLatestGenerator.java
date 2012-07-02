@@ -21,12 +21,12 @@ package com.yahoo.ycsb.generator;
  * Generate a popularity distribution of items, skewed to favor recent items significantly more than older items.
  */
 public class SkewedLatestGenerator extends IntegerGenerator {
-    CounterGenerator _basis;
-    ZipfianGenerator _zipfian;
+    IntegerGenerator basis;
+    ZipfianGenerator zipfian;
 
-    public SkewedLatestGenerator(CounterGenerator basis) {
-        _basis = basis;
-        _zipfian = new ZipfianGenerator(_basis.lastInt());
+    public SkewedLatestGenerator(IntegerGenerator basis) {
+        this.basis = basis;
+        this.zipfian = new ZipfianGenerator(this.basis.lastInt());
         nextInt();
     }
 
@@ -34,8 +34,8 @@ public class SkewedLatestGenerator extends IntegerGenerator {
      * Generate the next string in the distribution, skewed Zipfian favoring the items most recently returned by the basis generator.
      */
     public int nextInt() {
-        int max = _basis.lastInt();
-        int nextint = max - _zipfian.nextInt(max);
+        int max = basis.lastInt();
+        int nextint = max - zipfian.nextInt(max);
         setLastInt(nextint);
         return nextint;
     }
@@ -52,5 +52,4 @@ public class SkewedLatestGenerator extends IntegerGenerator {
     public double mean() {
         throw new UnsupportedOperationException("Can't compute mean of non-stationary distribution!");
     }
-
 }

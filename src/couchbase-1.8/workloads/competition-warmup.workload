@@ -7,6 +7,11 @@ couchbase.timeout=60000
 couchbase.checkOperationStatus=false
 table=ut
 
+readproportion=1
+updateproportion=0
+scanproportion=0
+insertproportion=0
+
 fieldcount=15
 fieldlength=100
 threadcount=30
@@ -14,11 +19,6 @@ operationcount=15000000
 recordcount=15000000
 workload=com.yahoo.ycsb.workloads.CoreWorkload
 
-readallfields=true
-
-readproportion=0
-updateproportion=0
-scanproportion=0
-insertproportion=1
-
-requestdistribution=zipfian
+requestdistribution=hotspot
+hotspotdatafraction=0.2
+hotspotoperationfraction=1

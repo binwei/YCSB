@@ -16,11 +16,11 @@
  */
 package com.yahoo.ycsb.workloads;
 
-import com.yahoo.ycsb.Client;
 import com.yahoo.ycsb.WorkloadException;
 import com.yahoo.ycsb.generator.IntegerGenerator;
 
-import java.util.Properties;
+import static com.yahoo.ycsb.Client.*;
+import static com.yahoo.ycsb.Utils.parseInt;
 
 /**
  * A disk-fragmenting workload.
@@ -43,12 +43,6 @@ import java.util.Properties;
  * @author sears
  */
 public class ConstantOccupancyWorkload extends CoreWorkload {
-    long disksize;
-    long storageages;
-    IntegerGenerator objectsizes;
-    double occupancy;
-
-    long object_count;
 
     public static final String STORAGE_AGE_PROPERTY = "storageages";
     public static final long STORAGE_AGE_PROPERTY_DEFAULT = 10;
@@ -60,29 +54,26 @@ public class ConstantOccupancyWorkload extends CoreWorkload {
     public static final double OCCUPANCY_PROPERTY_DEFAULT = 0.9;
 
     @Override
-    public void init(Properties p) throws WorkloadException {
-        disksize = Long.parseLong(p.getProperty(DISK_SIZE_PROPERTY, DISK_SIZE_PROPERTY_DEFAULT + ""));
-        storageages = Long.parseLong(p.getProperty(STORAGE_AGE_PROPERTY, STORAGE_AGE_PROPERTY_DEFAULT + ""));
-        occupancy = Double.parseDouble(p.getProperty(OCCUPANCY_PROPERTY, OCCUPANCY_PROPERTY_DEFAULT + ""));
+    public void init() throws WorkloadException {
+        long diskSize = Long.parseLong(properties.getProperty(DISK_SIZE_PROPERTY, DISK_SIZE_PROPERTY_DEFAULT + ""));
+        long storageAges = Long.parseLong(properties.getProperty(STORAGE_AGE_PROPERTY, STORAGE_AGE_PROPERTY_DEFAULT + ""));
+        double occupancy = Double.parseDouble(properties.getProperty(OCCUPANCY_PROPERTY, OCCUPANCY_PROPERTY_DEFAULT + ""));
 
-        if (p.getProperty(Client.RECORD_COUNT_PROPERTY) != null ||
-                p.getProperty(Client.INSERT_COUNT_PROPERTY) != null ||
-                p.getProperty(Client.OPERATION_COUNT_PROPERTY) != null) {
-            System.err.println("Warning: record, insert or operation count was set prior to initting ConstantOccupancyWorkload.  Overriding old values.");
+        if ((properties.getProperty(RECORD_COUNT_PROPERTY) != null) ||
+                (properties.getProperty(INSERT_COUNT_PROPERTY) != null) ||
+                (properties.getProperty(OPERATION_COUNT_PROPERTY) != null)) {
+            System.err.println("Warning: record, insert or operation count was set prior to init ConstantOccupancyWorkload. Overriding old values");
         }
-        IntegerGenerator g = CoreWorkload.getFieldLengthGenerator(p);
-        double fieldsize = g.mean();
-        int fieldcount = Integer.parseInt(p.getProperty(FIELD_COUNT_PROPERTY, FIELD_COUNT_PROPERTY_DEFAULT));
-
-        object_count = (long) (occupancy * ((double) disksize / (fieldsize * (double) fieldcount)));
-        if (object_count == 0) {
+        IntegerGenerator g = CoreWorkload.createFieldLengthGenerator(properties);
+        double fieldSize = g.mean();
+        int fieldCount = parseInt(properties.getProperty(FIELD_COUNT_PROPERTY), FIELD_COUNT_PROPERTY_DEFAULT);
+        long objectCount = (long) (occupancy * ((double) diskSize / (fieldSize * (double) fieldCount)));
+        if (objectCount == 0) {
             throw new IllegalStateException("Object count was zero.  Perhaps disksize is too low?");
         }
-        p.setProperty(Client.RECORD_COUNT_PROPERTY, object_count + "");
-        p.setProperty(Client.OPERATION_COUNT_PROPERTY, (storageages * object_count) + "");
-        p.setProperty(Client.INSERT_COUNT_PROPERTY, object_count + "");
-
-        super.init(p);
+        properties.setProperty(RECORD_COUNT_PROPERTY, Long.toString(objectCount));
+        properties.setProperty(OPERATION_COUNT_PROPERTY, Long.toString(storageAges * objectCount));
+        properties.setProperty(INSERT_COUNT_PROPERTY, Long.toString(objectCount));
+        super.init();
     }
-
 }

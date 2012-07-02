@@ -30,14 +30,18 @@ import java.util.regex.Pattern;
 public class BenchmarkingResultsAggregator {
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
-
-    private static final Pattern FILE_NAME_PATTERN = Pattern.compile("([^\\d]*)-([\\d\\.]*)-(\\p{Alpha}*)\\.workload(?:-target-(\\d*))?(?:-(\\d*))?\\.txt");
+                                                                                           //\\p{Alpha}* => .*
+    private static final Pattern FILE_NAME_PATTERN = Pattern.compile("([^\\d]*)-([\\d\\.]*)-(.*)\\.workload(?:-target-(\\d*))?(?:-(\\d*))?\\.txt");
 
     private static final String AGGREGATED_FILE_NAME = "%1$s-%2$s-%3$s.workload-aggregated.csv";
 
     private static final Pattern THROUGHPUT_PATTERN = Pattern.compile("\\[(\\w*)\\], (Throughput\\(ops/sec\\)), ([\\d\\.]*)");
 
     private static final Pattern AVERAGE_LATENCY_PATTERN = Pattern.compile("\\[(.*)\\], (AverageLatency\\(us\\)), ([\\d\\.]*)");
+
+    private static final Pattern PERCENTILE_95th_LATENCY_PATTERN = Pattern.compile("\\[(.*)\\], (95thPercentileLatency\\(us\\)), ([\\d\\.]*)");
+
+    private static final Pattern PERCENTILE_99th_LATENCY_PATTERN = Pattern.compile("\\[(.*)\\], (99thPercentileLatency\\(us\\)), ([\\d\\.]*)");
 
     private Map<String, Set<String>> writtenHeaders = new LinkedHashMap<String, Set<String>>();
     private File input;
@@ -235,7 +239,9 @@ public class BenchmarkingResultsAggregator {
         while ((line = reader.readLine()) != null) {
             for (Matcher matcher : new Matcher[] {
                     THROUGHPUT_PATTERN.matcher(line),
-                    AVERAGE_LATENCY_PATTERN.matcher(line)}) {
+                    AVERAGE_LATENCY_PATTERN.matcher(line),
+                    PERCENTILE_95th_LATENCY_PATTERN.matcher(line),
+                    PERCENTILE_99th_LATENCY_PATTERN.matcher(line)}) {
                 if (!matcher.find()) {
                     continue;
                 }
@@ -263,7 +269,7 @@ public class BenchmarkingResultsAggregator {
         String base = "/Users/tazija/Projects/nosql-research/repository/docs/benchmarking";
         List<String> inputs = Arrays.asList(
 //                base + "/mysql-cluster-7.2.5/4-nodes/x-large/20-threads-raid"
-                "/Users/tazija/Projects/nosql-research/repository/docs/benchmarking/mysql-sharded-5.5.2.3/4-nodes/x-large/20-threads-raid"
+                "/Users/tazija/Downloads/ycsb"
         );
         for (String input : inputs) {
             String output = input + "-aggregated";

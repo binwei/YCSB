@@ -16,20 +16,20 @@ public class RangeScanWorkload extends CoreWorkload {
 
     @Override
     public void doTransactionScan(DB db) {
-        int startKey = nextKeynum();
-        int length = scanlength.nextInt();
+        int startKey = nextTransactionKey();
+        int length = scanLengthGenerator.nextInt();
         int endKey = startKey + length;
         Set<String> fields = null;
-        if (!readallfields) {
+        if (!readAllFields) {
             //read a random field
-            String field = "field" + fieldchooser.nextString();
+            String field = "field" + fieldChooser.nextString();
             fields = new HashSet<String>();
             fields.add(field);
         }
         DBWrapper wrapper = (DBWrapper)db;
         RangeScanOperation operation = (RangeScanOperation) wrapper.getDB();
         long start = System.nanoTime();
-        int result = operation.scan(table, buildKeyName(startKey), buildKeyName(endKey),
+        int result = operation.scan(table, buildKey(startKey), buildKey(endKey),
                 length, fields, new ArrayList<Map<String, ByteIterator>>());
         long end = System.nanoTime();
         Measurements measurements = wrapper.getMeasurements();

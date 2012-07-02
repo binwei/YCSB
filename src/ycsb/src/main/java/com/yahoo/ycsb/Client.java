@@ -277,7 +277,7 @@ public class Client {
     public static final String WORKLOAD_PROPERTY = "workload";
 
     /**
-     * Indicates how many inserts to do, if less than recordcount. Useful for partitioning
+     * Indicates how many inserts to do, if less than recordCount. Useful for partitioning
      * the load among multiple servers, if the client is the bottleneck. Additionally, workloads
      * should support the "insertstart" property, which tells them which record to start at.
      */

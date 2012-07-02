@@ -75,8 +75,7 @@
 										<argument>-P</argument>
 										<argument>${basedir}/workloads/a.workload</argument>
 										<argument>-t</argument>
-										<argument>-target</argument>
-										                                       
+										<argument>-target</argument>         
 										<argument>${ycsb.target}</argument>
 										<argument>-p</argument>
 										<argument>operationcount=${ycsb.operationcount}</argument>
@@ -115,8 +114,7 @@
 										<argument>-P</argument>
 										<argument>${basedir}/workloads/b.workload</argument>
 										<argument>-t</argument>
-										<argument>-target</argument>
-										                                       
+										<argument>-target</argument>          
 										<argument>${ycsb.target}</argument>
 										<argument>-p</argument>
 										<argument>operationcount=${ycsb.operationcount}</argument>
@@ -155,8 +153,7 @@
 										<argument>-P</argument>
 										<argument>${basedir}/workloads/c.workload</argument>
 										<argument>-t</argument>
-										<argument>-target</argument>
-										                                       
+										<argument>-target</argument>         
 										<argument>${ycsb.target}</argument>
 										<argument>-p</argument>
 										<argument>operationcount=${ycsb.operationcount}</argument>
@@ -195,8 +192,7 @@
 										<argument>-P</argument>
 										<argument>${basedir}/workloads/d.workload</argument>
 										<argument>-t</argument>
-										<argument>-target</argument>
-										                                       
+										<argument>-target</argument>        
 										<argument>${ycsb.target}</argument>
 										<argument>-p</argument>
 										<argument>operationcount=${ycsb.operationcount}</argument>
@@ -235,8 +231,7 @@
 										<argument>-P</argument>
 										<argument>${basedir}/workloads/e.workload</argument>
 										<argument>-t</argument>
-										<argument>-target</argument>
-										                                       
+										<argument>-target</argument>         
 										<argument>${ycsb.target}</argument>
 										<argument>-p</argument>
 										<argument>operationcount=${ycsb.operationcount}</argument>
@@ -275,8 +270,7 @@
 										<argument>-P</argument>
 										<argument>${basedir}/workloads/f.workload</argument>
 										<argument>-t</argument>
-										<argument>-target</argument>
-										                                       
+										<argument>-target</argument>          
 										<argument>${ycsb.target}</argument>
 										<argument>-p</argument>
 										<argument>operationcount=${ycsb.operationcount}</argument>
@@ -315,8 +309,121 @@
 										<argument>-P</argument>
 										<argument>${basedir}/workloads/g.workload</argument>
 										<argument>-t</argument>
-										<argument>-target</argument>
-										                                       
+										<argument>-target</argument>        
+										<argument>${ycsb.target}</argument>
+										<argument>-p</argument>
+										<argument>operationcount=${ycsb.operationcount}</argument>
+										<argument>-s</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+        <!-- Couchbase competing test -->
+        <profile>
+            <id>couchbase-1.8-competition-load.workload</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.1.1</version>
+                        <executions>
+                            <execution>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <configuration>
+                                    <systemProperties>
+                                        <systemProperty>
+                                            <key>net.spy.log.LoggerImpl</key>
+                                            <value>net.spy.memcached.compat.log.Log4JLogger</value>
+                                        </systemProperty>
+                                    </systemProperties>
+                                    <mainClass>com.yahoo.ycsb.Client</mainClass>
+                                    <arguments>
+										<argument>-P</argument>
+										<argument>${basedir}/workloads/competition-load.workload</argument>
+										<argument>-load</argument>
+										<argument>-s</argument>
+									</arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+			<id>couchbase-1.8-competition-warmup.workload</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>1.1.1</version>
+						<executions>
+							<execution>
+								<phase>test</phase>
+								<goals>
+									<goal>java</goal>
+								</goals>
+								<configuration>
+                                    <systemProperties>
+                                        <systemProperty>
+                                            <key>net.spy.log.LoggerImpl</key>
+                                            <value>net.spy.memcached.compat.log.Log4JLogger</value>
+                                        </systemProperty>
+                                    </systemProperties>
+									<mainClass>com.yahoo.ycsb.Client</mainClass>
+									<arguments>
+										<argument>-P</argument>
+										<argument>${basedir}/workloads/competition-warmup.workload</argument>
+										<argument>-t</argument>
+										<argument>-target</argument>  
+										<argument>${ycsb.target}</argument>
+										<argument>-p</argument>
+										<argument>operationcount=${ycsb.operationcount}</argument>
+										<argument>-s</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+        <profile>
+			<id>couchbase-1.8-competition-access.workload</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>1.1.1</version>
+						<executions>
+							<execution>
+								<phase>test</phase>
+								<goals>
+									<goal>java</goal>
+								</goals>
+								<configuration>
+                                    <systemProperties>
+                                        <systemProperty>
+                                            <key>net.spy.log.LoggerImpl</key>
+                                            <value>net.spy.memcached.compat.log.Log4JLogger</value>
+                                        </systemProperty>
+                                    </systemProperties>
+									<mainClass>com.yahoo.ycsb.Client</mainClass>
+									<arguments>
+										<argument>-P</argument>
+										<argument>${basedir}/workloads/competition-access.workload</argument>
+										<argument>-t</argument>
+										<argument>-target</argument>   
 										<argument>${ycsb.target}</argument>
 										<argument>-p</argument>
 										<argument>operationcount=${ycsb.operationcount}</argument>
@@ -330,6 +437,7 @@
 			</build>
 		</profile>
 	</profiles>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.yahoo.ycsb</groupId>

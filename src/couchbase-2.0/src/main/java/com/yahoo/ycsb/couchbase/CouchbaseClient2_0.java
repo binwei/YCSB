@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.Map.Entry;
@@ -55,7 +54,7 @@ public class CouchbaseClient2_0 extends DB implements RangeScanOperation, Couchb
     @Override
     public void init() throws DBException {
         try {
-            client = createCouchbaseClient();
+            client = createCouchbaseClient(getProperties());
             String checkOperationStatusValue = getProperties().getProperty(CHECK_OPERATION_STATUS_PROPERTY);
             checkOperationStatus = checkOperationStatusValue != null ?
                     Boolean.valueOf(checkOperationStatusValue) : CHECK_OPERATION_STATUS_DEFAULT;
@@ -64,25 +63,21 @@ public class CouchbaseClient2_0 extends DB implements RangeScanOperation, Couchb
         }
     }
 
-    protected com.couchbase.client.CouchbaseClient createCouchbaseClient() throws URISyntaxException, DBException, IOException {
-        String bucket = getProperties().getProperty(BUCKET_PROPERTY, BUCKET_PROPERTY_DEFAULT);
-        String user = getProperties().getProperty(USER_PROPERTY);
-        String password = getProperties().getProperty(PASSWORD_PROPERTY);
-        String timeoutValue = getProperties().getProperty(TIMEOUT_PROPERTY);
+    protected static com.couchbase.client.CouchbaseClient createCouchbaseClient(Properties properties) throws Exception {
+        String bucket = properties.getProperty(BUCKET_PROPERTY, BUCKET_PROPERTY_DEFAULT);
+        String user = properties.getProperty(USER_PROPERTY);
+        String password = properties.getProperty(PASSWORD_PROPERTY);
+        String timeoutValue = properties.getProperty(TIMEOUT_PROPERTY);
         int timeout = DEFAULT_TIMEOUT;
-        try {
-            if (timeoutValue != null && timeoutValue.length() > 0) {
-                timeout = Integer.parseInt(timeoutValue);
-            }
-        } catch (NumberFormatException e) {
-            log.error("Error parsing timeout value: " + timeoutValue, e);
+        if (timeoutValue != null && timeoutValue.length() > 0) {
+            timeout = Integer.parseInt(timeoutValue);
         }
-        String failureModeValue = getProperties().getProperty(FAILURE_MODE_PROPERTY);
+        String failureModeValue = properties.getProperty(FAILURE_MODE_PROPERTY);
         FailureMode failureMode = FAILURE_MODE_PROPERTY_DEFAULT;
         if (failureModeValue != null) {
             failureMode = FailureMode.valueOf(failureModeValue);
         }
-        String readBufferSizeValue = getProperties().getProperty(READ_BUFFER_SIZE_PROPERTY);
+        String readBufferSizeValue = properties.getProperty(READ_BUFFER_SIZE_PROPERTY);
         int readBufferSize;
         if (readBufferSizeValue != null) {
             readBufferSize = Integer.parseInt(readBufferSizeValue);
@@ -94,17 +89,16 @@ public class CouchbaseClient2_0 extends DB implements RangeScanOperation, Couchb
         connectionFactoryBuilder.setOpTimeout(timeout);
         connectionFactoryBuilder.setFailureMode(failureMode);
         List<URI> servers = new ArrayList<URI>();
-        for (String address : getHosts()) {
+        for (String address : getHosts(properties)) {
             servers.add(new URI("http://" + address + ":8091/pools"));
         }
-
         CouchbaseConnectionFactory connectionFactory =
                 connectionFactoryBuilder.buildCouchbaseConnection(servers, bucket, user, password);
         return new com.couchbase.client.CouchbaseClient(connectionFactory);
     }
 
-    protected String[] getHosts() throws DBException {
-        String hosts = getProperties().getProperty(HOSTS_PROPERTY);
+    protected static String[] getHosts(Properties properties) throws DBException {
+        String hosts = properties.getProperty(HOSTS_PROPERTY);
         if (hosts == null) {
             throw new DBException("Required property hosts missing for Couchbase");
         }

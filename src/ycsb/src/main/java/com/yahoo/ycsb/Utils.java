@@ -23,14 +23,14 @@ import java.util.Random;
  * Utility functions.
  */
 public class Utils {
-    private static final Random rand = new Random();
-    private static final ThreadLocal<Random> rng = new ThreadLocal<Random>();
+    private static final Random random = new Random();
+    private static final ThreadLocal<Random> threadLocalRandom = new ThreadLocal<Random>();
 
     public static Random random() {
-        Random ret = rng.get();
+        Random ret = threadLocalRandom.get();
         if (ret == null) {
-            ret = new Random(rand.nextLong());
-            rng.set(ret);
+            ret = new Random(random.nextLong());
+            threadLocalRandom.set(ret);
         }
         return ret;
     }
@@ -56,8 +56,8 @@ public class Utils {
     /**
      * Hash an integer value.
      */
-    public static long hash(long val) {
-        return FNVhash64(val);
+    public static long hash(long value) {
+        return FNVhash64(value);
     }
 
     public static final int FNV_offset_basis_32 = 0x811c9dc5;
@@ -106,5 +106,18 @@ public class Utils {
             //hashval = hashval ^ octet;
         }
         return Math.abs(hashval);
+    }
+
+
+    public static int parseInt(String value, int defaultValue) {
+        return value != null ? Integer.parseInt(value) : defaultValue;
+    }
+
+    public static double parseDouble(String value, double defaultValue) {
+        return value != null ? Double.parseDouble(value) : defaultValue;
+    }
+
+    public static boolean parseBoolean(String value, boolean defaultValue) {
+        return value != null ? Boolean.parseBoolean(value) : defaultValue;
     }
 }

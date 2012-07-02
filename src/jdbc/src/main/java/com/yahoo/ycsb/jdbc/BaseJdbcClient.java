@@ -1,9 +1,6 @@
 package com.yahoo.ycsb.jdbc;
 
-import com.yahoo.ycsb.ByteArrayByteIterator;
-import com.yahoo.ycsb.ByteIterator;
-import com.yahoo.ycsb.DB;
-import com.yahoo.ycsb.DBException;
+import com.yahoo.ycsb.*;
 import com.yahoo.ycsb.workloads.RangeScanOperation;
 
 import java.sql.*;
@@ -11,6 +8,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static com.yahoo.ycsb.Utils.parseInt;
 import static com.yahoo.ycsb.jdbc.QueryType.*;
 import static com.yahoo.ycsb.workloads.CoreWorkload.*;
 
@@ -40,7 +38,7 @@ public abstract class BaseJdbcClient extends DB implements RangeScanOperation, J
         columnPrefix = properties.getProperty(COLUMN_PREFIX_PROPERTY, COLUMN_PREFIX_DEFAULT);
 
         table = getProperties().getProperty(TABLENAME_PROPERTY, TABLENAME_PROPERTY_DEFAULT);
-        fieldCount = Integer.parseInt(getProperties().getProperty(FIELD_COUNT_PROPERTY, FIELD_COUNT_PROPERTY_DEFAULT));
+        fieldCount = parseInt(getProperties().getProperty(FIELD_COUNT_PROPERTY), FIELD_COUNT_PROPERTY_DEFAULT);
 
         connections = new ArrayList<Connection>(3);
         statements = new ConcurrentHashMap<QueryDescriptor, PreparedStatement>();
