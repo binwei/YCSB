@@ -1,0 +1,15 @@
+db=com.yahoo.ycsb.mongo.MongoDbClient
+mongodb.urls=ycsb-node1:27020,ycsb-node2:27020,ycsb-node3:27020,ycsb-node4:27020
+mongodb.database=UserDatabase
+mongodb.readPreference=primary
+mongodb.writeConcern=normal
+table=UserTable
+
+fieldcount=15
+fieldlength=100
+threadcount=30
+operationcount=15000000
+recordcount=15000000
+workload=com.yahoo.ycsb.workloads.CoreWorkload
+
+requestdistribution=zipfian

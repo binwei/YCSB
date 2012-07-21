@@ -52,6 +52,14 @@ public class CouchbaseClient1_8 extends DB implements CouchbaseClientProperties 
         }
     }
 
+    private void initCouchbaseClient() throws Exception {
+        synchronized (CouchbaseClient1_8.class) {
+            if (client == null) {
+
+            }
+        }
+    }
+
     protected static com.couchbase.client.CouchbaseClient createCouchbaseClient(Properties properties) throws Exception {
         String bucket = properties.getProperty(BUCKET_PROPERTY, BUCKET_PROPERTY_DEFAULT);
         String user = properties.getProperty(USER_PROPERTY);
@@ -124,7 +132,7 @@ public class CouchbaseClient1_8 extends DB implements CouchbaseClientProperties 
             return getReturnCode(future);
         } catch (Exception e) {
             if (log.isErrorEnabled()) {
-                log.error("Error updating record with key: " + qualifiedKey, e);
+                log.error("Error updating value with key: " + qualifiedKey, e);
             }
             return ERROR;
         }

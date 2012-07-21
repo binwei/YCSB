@@ -20,13 +20,13 @@ package com.yahoo.ycsb.workloads;
 import com.yahoo.ycsb.*;
 import com.yahoo.ycsb.generator.*;
 import com.yahoo.ycsb.measurements.Measurements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
 
-import static com.yahoo.ycsb.Utils.parseBoolean;
-import static com.yahoo.ycsb.Utils.parseInt;
-import static com.yahoo.ycsb.Utils.parseDouble;
+import static com.yahoo.ycsb.Utils.*;
 import static com.yahoo.ycsb.generator.ExponentialGenerator.EXPONENTIAL_FRAC_DEFAULT;
 import static com.yahoo.ycsb.generator.ExponentialGenerator.EXPONENTIAL_PERCENTILE_DEFAULT;
 
@@ -53,6 +53,9 @@ import static com.yahoo.ycsb.generator.ExponentialGenerator.EXPONENTIAL_PERCENTI
  * </ul>
  */
 public class CoreWorkload extends Workload {
+
+    public static final int CLEANUP_INSERTED_KEYS_BATCH_SIZE = 1000;
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     /**
      * The name of the database table to run queries against.
@@ -279,6 +282,20 @@ public class CoreWorkload extends Workload {
 
     protected Properties properties;
 
+    private boolean cleanupInsertedKeys;
+
+    private List<String> insertedKeys;
+
+    public static final String CLEANUP_INSERTED_KEYS_PROPERTY = "cleanupinsertedkeys";
+
+    private int operationCount;
+
+    private double insertProportion;
+    private double readProportion;
+    private double updateProportion;
+    private double scanProportion;
+    private double readModifyWriteProportion;
+
     public static IntegerGenerator createFieldLengthGenerator(Properties properties) throws WorkloadException {
         IntegerGenerator generator;
         String distribution = properties.getProperty(FIELD_LENGTH_DISTRIBUTION_PROPERTY, FIELD_LENGTH_DISTRIBUTION_PROPERTY_DEFAULT);
@@ -314,6 +331,19 @@ public class CoreWorkload extends Workload {
      *          if workload initialization failed.
      */
     protected void init() throws WorkloadException {
+        operationCount = Integer.parseInt(
+                properties.getProperty(Client.OPERATION_COUNT_PROPERTY));
+        readProportion = parseDouble(
+                properties.getProperty(READ_PROPORTION_PROPERTY), READ_PROPORTION_PROPERTY_DEFAULT);
+        updateProportion = parseDouble(
+                properties.getProperty(UPDATE_PROPORTION_PROPERTY), UPDATE_PROPORTION_PROPERTY_DEFAULT);
+        insertProportion = parseDouble(
+                properties.getProperty(INSERT_PROPORTION_PROPERTY), INSERT_PROPORTION_PROPERTY_DEFAULT);
+        scanProportion = parseDouble(
+                properties.getProperty(SCAN_PROPORTION_PROPERTY), SCAN_PROPORTION_PROPERTY_DEFAULT);
+        readModifyWriteProportion = parseDouble(
+                properties.getProperty(READMODIFYWRITE_PROPORTION_PROPERTY), READMODIFYWRITE_PROPORTION_PROPERTY_DEFAULT);
+
         table = properties.getProperty(TABLENAME_PROPERTY, TABLENAME_PROPERTY_DEFAULT);
 
         fieldCount = parseInt(properties.getProperty(FIELD_COUNT_PROPERTY), FIELD_COUNT_PROPERTY_DEFAULT);
@@ -331,6 +361,12 @@ public class CoreWorkload extends Workload {
         transactionInsertKeyGenerator = createTransactionInsertKeyGenerator();
         transactionKeyGenerator = createTransactionKeyGenerator();
         scanLengthGenerator = createScanLengthGenerator();
+
+        cleanupInsertedKeys = Utils.parseBoolean(properties.getProperty(CLEANUP_INSERTED_KEYS_PROPERTY), false);
+        if (cleanupInsertedKeys) {
+            int insertedKeysCapacity = (int) (insertProportion * operationCount * 2.0);
+            insertedKeys = new ArrayList<String>(insertedKeysCapacity);
+        }
     }
 
     protected IntegerGenerator createTransactionInsertKeyGenerator() {
@@ -359,12 +395,7 @@ public class CoreWorkload extends Workload {
             //of the test. that is, we'll predict the number of inserts, and tell the scrambled zipfian generator the number of existing keys
             //plus the number of predicted keys as the total keyspace. then, if the generator picks a key that hasn't been inserted yet, will
             //just ignore it and pick another key. this way, the size of the keyspace doesn't change from the perspective of the scrambled zipfian generator
-
-            int operationCount = Integer.parseInt(
-                    properties.getProperty(Client.OPERATION_COUNT_PROPERTY));
-            double insertProportion = parseDouble(
-                    properties.getProperty(INSERT_PROPORTION_PROPERTY), INSERT_PROPORTION_PROPERTY_DEFAULT);
-            int expectedNewKeys = (int) (((double) operationCount) * insertProportion * 2.0); //2 is fudge factor
+            int expectedNewKeys = (int) (insertProportion * operationCount * 2.0); //2 is fudge factor
             generator = new ScrambledZipfianGenerator(recordCount + expectedNewKeys);
         } else if (distribution.compareTo(DISTRIBUTION_LATEST) == 0) {
             generator = new SkewedLatestGenerator(transactionInsertKeyGenerator);
@@ -382,31 +413,21 @@ public class CoreWorkload extends Workload {
     }
 
     protected Generator createOperationChooser() {
-        double proportionRead = parseDouble(
-                properties.getProperty(READ_PROPORTION_PROPERTY), READ_PROPORTION_PROPERTY_DEFAULT);
-        double proportionUpdate = parseDouble(
-                properties.getProperty(UPDATE_PROPORTION_PROPERTY), UPDATE_PROPORTION_PROPERTY_DEFAULT);
-        double proportionInsert = parseDouble(
-                properties.getProperty(INSERT_PROPORTION_PROPERTY), INSERT_PROPORTION_PROPERTY_DEFAULT);
-        double proportionScan = parseDouble(
-                properties.getProperty(SCAN_PROPORTION_PROPERTY), SCAN_PROPORTION_PROPERTY_DEFAULT);
-        double proportionReadModifyWrite = parseDouble(
-                properties.getProperty(READMODIFYWRITE_PROPORTION_PROPERTY), READMODIFYWRITE_PROPORTION_PROPERTY_DEFAULT);
         DiscreteGenerator chooser = new DiscreteGenerator();
-        if (proportionRead > 0) {
-            chooser.addValue(proportionRead, "READ");
+        if (readProportion > 0) {
+            chooser.addValue(readProportion, "READ");
         }
-        if (proportionUpdate > 0) {
-            chooser.addValue(proportionUpdate, "UPDATE");
+        if (updateProportion > 0) {
+            chooser.addValue(updateProportion, "UPDATE");
         }
-        if (proportionInsert > 0) {
-            chooser.addValue(proportionInsert, "INSERT");
+        if (insertProportion > 0) {
+            chooser.addValue(insertProportion, "INSERT");
         }
-        if (proportionScan > 0) {
-            chooser.addValue(proportionScan, "SCAN");
+        if (scanProportion > 0) {
+            chooser.addValue(scanProportion, "SCAN");
         }
-        if (proportionReadModifyWrite > 0) {
-            chooser.addValue(proportionReadModifyWrite, "READMODIFYWRITE");
+        if (readModifyWriteProportion > 0) {
+            chooser.addValue(readModifyWriteProportion, "READMODIFYWRITE");
         }
         return chooser;
     }
@@ -579,8 +600,44 @@ public class CoreWorkload extends Workload {
 
     public void doTransactionInsert(DB db) {
         //choose the next key
-        String key = buildKey(nextTransactionKey());
+        String key = buildKey(transactionInsertKeyGenerator.nextInt());
         Map<String, ByteIterator> values = buildValues();
         db.insert(table, key, values);
+        if (cleanupInsertedKeys) {
+            insertedKeys.add(key);
+        }
+    }
+
+    @Override
+    public void cleanup() throws WorkloadException {
+        if (cleanupInsertedKeys) {
+            if (log.isInfoEnabled()) {
+                log.info("Cleaning up inserted keys");
+            }
+            DB db;
+            try {
+                db = DBFactory.newDB(properties.getProperty("db", "com.yahoo.ycsb.BasicDB"), properties);
+            } catch (UnknownDBException e) {
+                if (log.isErrorEnabled()) {
+                    log.error("Unknown database", e);
+                }
+                return;
+            }
+            try {
+                db.init();
+            } catch (DBException e) {
+                if (log.isErrorEnabled()) {
+                    log.error("Database connection can't be initialized", e);
+                }
+                return;
+            }
+            int size = insertedKeys.size();
+            int batchSize = CLEANUP_INSERTED_KEYS_BATCH_SIZE;
+            for (int offset = 0; size > 0; size -= batchSize) {
+                int count = Math.min(size, batchSize);
+                List<String> keys = insertedKeys.subList(offset, offset + count);
+                db.deleteAll(table, new HashSet<String>(keys));
+            }
+        }
     }
 }

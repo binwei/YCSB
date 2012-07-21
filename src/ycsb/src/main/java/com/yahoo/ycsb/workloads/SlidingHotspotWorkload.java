@@ -32,6 +32,7 @@ public class SlidingHotspotWorkload extends CoreWorkload {
 
     @Override
     public void cleanup() throws WorkloadException {
+        super.cleanup();
         if (transactionKeyGenerator instanceof SlidingHotspotIntegerGenerator) {
             ((SlidingHotspotIntegerGenerator) transactionKeyGenerator).stopSliding();
         }

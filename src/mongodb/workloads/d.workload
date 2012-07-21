@@ -27,7 +27,7 @@
 # workload here (which we believe is more typical of how people build systems.)
 
 db=com.yahoo.ycsb.mongo.MongoDbClient
-mongodb.urls=rnd-nosql-node-master
+mongodb.urls=ycsb-node-router
 mongodb.database=UserDatabase
 table=UserTable
 

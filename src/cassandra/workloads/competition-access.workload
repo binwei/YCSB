@@ -1,0 +1,22 @@
+db=com.yahoo.ycsb.cassandra.CassandraClient
+cassandra.hosts=ycsb-node1,ycsb-node2,ycsb-node3,ycsb-node4
+cassandra.columnFamily=UserColumnFamily
+table=UserKeyspace
+
+# Use less mutation ops (reads 0.6 originally) to mitigate growing disk write queue
+readproportion=0.60
+insertproportion=0.05
+updateproportion=0.33
+deleteproportion=0.02
+
+fieldcount=15
+fieldlength=100
+threadcount=30
+operationcount=15000000
+recordcount=15000000
+workload=com.yahoo.ycsb.workloads.SlidingHotspotWorkload
+
+requestdistribution=slidinghotspot
+hotspotslidingspeed=2
+hotspotdatafraction=0.2
+hotspotoperationfraction=0.99

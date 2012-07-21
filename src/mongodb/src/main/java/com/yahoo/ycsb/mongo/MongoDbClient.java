@@ -8,24 +8,17 @@
  */
 package com.yahoo.ycsb.mongo;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBAddress;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.Mongo;
-import com.mongodb.WriteConcern;
+import com.mongodb.*;
 import com.yahoo.ycsb.ByteIterator;
 import com.yahoo.ycsb.DB;
 import com.yahoo.ycsb.DBException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
+import static com.mongodb.ReadPreference.PRIMARY;
+import static com.mongodb.WriteConcern.NORMAL;
 import static com.yahoo.ycsb.StringByteIterator.getByteIteratorMap;
 
 /**
@@ -33,53 +26,58 @@ import static com.yahoo.ycsb.StringByteIterator.getByteIteratorMap;
  * <p/>
  * Properties to set:
  * <p/>
- * mongodb.urls=mongodb://localhost:27017 (comma separated list of mongo routers
+ * mongodb.urls=localhost:27017 (comma separated list)
  * mongodb.database=UserDatabase
  * mongodb.writeConcern=normal
  *
  * @author ypai
  */
-public class MongoDbClient extends DB {
+public class MongoDbClient extends DB implements MongoDbClientProperties {
 
     private static Random random = new Random();
+    protected final Logger log = LoggerFactory.getLogger(getClass());
     private Mongo mongo;
-    private WriteConcern writeConcern;
     private String database;
+    private ReadPreference readPreference;
+    private WriteConcern writeConcern;
 
     /**
      * Initialize any state for this DB. Called once per DB instance; there is
      * one DB instance per client thread.
      */
     public void init() throws DBException {
-        // initialize MongoDb driver
-        Properties props = getProperties();
-        String urls = props.getProperty("mongodb.urls");
-        database = props.getProperty("mongodb.database");
-        String writeConcernType = props.getProperty("mongodb.writeConcern");
-
-        if ("none".equals(writeConcernType)) {
-            writeConcern = WriteConcern.NONE;
-        } else if ("strict".equals(writeConcernType)) {
-            writeConcern = WriteConcern.SAFE;
-        } else if ("normal".equals(writeConcernType)) {
-            writeConcern = WriteConcern.NORMAL;
-        }
-        String []allUrls = urls.split(",");
-        String url = allUrls[random.nextInt(allUrls.length)];
+        Properties properties = getProperties();
+        database = properties.getProperty(DATABASE);
+        String[] urls = properties.getProperty(URLS).split(",");
+        String url = urls[random.nextInt(urls.length)];
+        readPreference = getReadPreference();
+        writeConcern = getWriteConcern();
         try {
-            // strip out prefix since Java driver doesn't currently support
-            // standard connection format URL yet
-            // http://www.mongodb.org/display/DOCS/Connections
+            /**
+             * Strip out prefix since Java driver doesn't currently support standard connection format URL yet
+             * http://www.mongodb.org/display/DOCS/Connections
+             */
             if (url.startsWith("mongodb://")) {
                 url = url.substring(10);
             }
-            // need to append db to url.
-            url += "/" + database;
-            mongo = new Mongo(new DBAddress(url));
+            mongo = new Mongo(new DBAddress(url, database));
+            mongo.setReadPreference(readPreference);
+            mongo.setWriteConcern(writeConcern);
         } catch (Exception exception) {
-            System.err.println("Could not initialize mongo connection: " + exception.toString());
-            return;
+            if (log.isErrorEnabled()) {
+                log.error("Could not initialize connection", exception);
+            }
         }
+    }
+
+    private ReadPreference getReadPreference() {
+        String value = getProperties().getProperty(READ_PREFERENCE);
+        return value != null ? ReadPreferenceHelper.valueOf(value.toUpperCase()) : PRIMARY;
+    }
+
+    private WriteConcern getWriteConcern() {
+        String value = getProperties().getProperty(WRITE_CONCERN);
+        return value != null ? WriteConcern.valueOf(value.toUpperCase()) : NORMAL;
     }
 
     @Override
@@ -96,19 +94,43 @@ public class MongoDbClient extends DB {
             db = mongo.getDB(database);
             db.requestStart();
             DBCollection collection = db.getCollection(table);
-            DBObject q = new BasicDBObject().append("_id", key);
-            if (writeConcern.equals(WriteConcern.SAFE)) {
-                q.put("$atomic", true);
+            DBObject query = new BasicDBObject("_id", key);
+            if (WriteConcern.SAFE.equals(writeConcern)) {
+                query.put("$atomic", true);
             }
-            collection.remove(q);
-
-            // see if record was deleted
-            DBObject errors = db.getLastError();
-
-            return ((Integer) errors.get("n")) == 1 ? 0 : 1;
+            collection.remove(query);
+            return db.getLastError().ok() ? OK : ERROR;
         } catch (Exception e) {
-            System.err.println(e.toString());
-            return 1;
+            if (log.isErrorEnabled()) {
+                log.error("Error deleting value", e);
+            }
+            return ERROR;
+        } finally {
+            if (db != null) {
+                db.requestDone();
+            }
+        }
+    }
+
+    public int deleteAll(String table, Set<String> keys) {
+        com.mongodb.DB db = null;
+        try {
+            db = mongo.getDB(database);
+            db.requestStart();
+            DBCollection collection = db.getCollection(table);
+            BasicDBList keysIn = new BasicDBList();
+            keysIn.addAll(keys);
+            DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", keysIn));
+            if (WriteConcern.SAFE.equals(writeConcern)) {
+                query.put("$atomic", true);
+            }
+            collection.remove(query);
+            return db.getLastError().ok() ? OK : ERROR;
+        } catch (Exception e) {
+            if (log.isErrorEnabled()) {
+                log.error("Error deleting value", e);
+            }
+            return ERROR;
         } finally {
             if (db != null) {
                 db.requestDone();
@@ -130,26 +152,19 @@ public class MongoDbClient extends DB {
         com.mongodb.DB db = null;
         try {
             db = mongo.getDB(database);
-
             db.requestStart();
-
             DBCollection collection = db.getCollection(table);
-            DBObject r = new BasicDBObject().append("_id", key);
+            DBObject object = new BasicDBObject("_id", key);
             for (String k : values.keySet()) {
-                r.put(k, values.get(k).toString());
+                object.put(k, values.get(k).toString());
             }
-            collection.setWriteConcern(writeConcern);
-
-            collection.insert(r);
-
-            // determine if record was inserted, does not seem to return
-            // n=<records affected> for insert
-            DBObject errors = db.getLastError();
-
-            return ((Double) errors.get("ok") == 1.0) && errors.get("err") == null ? 0 : 1;
+            collection.insert(object);
+            return db.getLastError().ok() ? OK : ERROR;
         } catch (Exception e) {
-            System.err.println(e.toString());
-            return 1;
+            if (log.isErrorEnabled()) {
+                log.error("Error inserting value", e);
+            }
+            return ERROR;
         } finally {
             if (db != null) {
                 db.requestDone();
@@ -173,29 +188,26 @@ public class MongoDbClient extends DB {
         com.mongodb.DB db = null;
         try {
             db = mongo.getDB(database);
-
             db.requestStart();
-
             DBCollection collection = db.getCollection(table);
-            DBObject q = new BasicDBObject().append("_id", key);
-            DBObject fieldsToReturn = new BasicDBObject();
-            boolean returnAllFields = fields == null;
-            DBObject queryResult;
-            if (!returnAllFields) {
+            DBObject query = new BasicDBObject("_id", key);
+            DBObject targetFields = null;
+            if (fields != null) {
+                targetFields = new BasicDBObject();
                 for (String field : fields) {
-                    fieldsToReturn.put(field, 1);
+                    targetFields.put(field, 1);
                 }
-                queryResult = collection.findOne(q, fieldsToReturn);
-            } else {
-                queryResult = collection.findOne(q);
             }
-            if (queryResult != null) {
-                result.putAll(getByteIteratorMap(queryResult.toMap()));
+            DBObject object = collection.findOne(query, targetFields);
+            if (object != null) {
+                result.putAll(getByteIteratorMap(object.toMap()));
             }
-            return queryResult != null ? 0 : 1;
+            return object != null ? OK : ERROR;
         } catch (Exception e) {
-            System.err.println(e.toString());
-            return 1;
+            if (log.isErrorEnabled()) {
+                log.error("Error inserting value", e);
+            }
+            return ERROR;
         } finally {
             if (db != null) {
                 db.requestDone();
@@ -218,32 +230,20 @@ public class MongoDbClient extends DB {
         com.mongodb.DB db = null;
         try {
             db = mongo.getDB(database);
-
             db.requestStart();
-
             DBCollection collection = db.getCollection(table);
-            DBObject q = new BasicDBObject().append("_id", key);
-            DBObject u = new BasicDBObject();
-            DBObject fieldsToSet = new BasicDBObject();
-            Iterator<String> keys = values.keySet().iterator();
-            String tmpKey, tmpVal;
-            while (keys.hasNext()) {
-                tmpKey = keys.next();
-                tmpVal = values.get(tmpKey).toString();
-                fieldsToSet.put(tmpKey, tmpVal);
-
+            DBObject targetFields = new BasicDBObject();
+            for (Map.Entry<String, ByteIterator> entry : values.entrySet()) {
+                targetFields.put(entry.getKey(), entry.getValue().toString());
             }
-            u.put("$set", fieldsToSet);
             collection.setWriteConcern(writeConcern);
-            collection.update(q, u);
-
-            // determine if record was inserted
-            DBObject errors = db.getLastError();
-
-            return (Integer) errors.get("n") == 1 ? 0 : 1;
+            collection.update(new BasicDBObject("_id", key), new BasicDBObject("$set", targetFields));
+            return db.getLastError().ok() ? OK : ERROR;
         } catch (Exception e) {
-            System.err.println(e.toString());
-            return 1;
+            if (log.isErrorEnabled()) {
+                log.error("Error inserting value", e);
+            }
+            return ERROR;
         } finally {
             if (db != null) {
                 db.requestDone();
@@ -271,18 +271,19 @@ public class MongoDbClient extends DB {
             db = mongo.getDB(database);
             db.requestStart();
             DBCollection collection = db.getCollection(table);
-            // { "_id":{"$gte":startKey, "$lte":{"appId":key+"\uFFFF"}} }
-            DBObject scanRange = new BasicDBObject().append("$gte", startKey);
-            DBObject q = new BasicDBObject().append("_id", scanRange);
-            DBCursor cursor = collection.find(q).limit(limit);
-            while (cursor.hasNext()) {
+
+            DBObject query = new BasicDBObject("_id", new BasicDBObject("$gte", startKey));
+            DBCursor object = collection.find(query).limit(limit);
+            while (object.hasNext()) {
                 //toMap() returns a Map, but result.add() expects a Map<String,String>. Hence, the suppress warnings.
-                result.add(getByteIteratorMap((Map<String, String>) cursor.next().toMap()));
+                result.add(getByteIteratorMap((Map<String, String>) object.next().toMap()));
             }
-            return 0;
+            return OK;
         } catch (Exception e) {
-            System.err.println(e.toString());
-            return 1;
+            if (log.isErrorEnabled()) {
+                log.error("Error performing range scan", e);
+            }
+            return ERROR;
         } finally {
             if (db != null) {
                 db.requestDone();

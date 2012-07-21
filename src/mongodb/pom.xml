@@ -16,7 +16,7 @@
     <packaging>jar</packaging>
     <profiles>
         <profile>
-            <id>mongodb-2.5-load.workload</id>
+            <id>mongodb-2.0.6-load.workload</id>
             <build>
                 <plugins>
                     <plugin>
@@ -45,7 +45,7 @@
             </build>
         </profile>
         <profile>
-            <id>mongodb-2.5-a.workload</id>
+            <id>mongodb-2.0.6-a.workload</id>
             <build>
                 <plugins>
                     <plugin>
@@ -78,7 +78,7 @@
             </build>
         </profile>
         <profile>
-            <id>mongodb-2.5-b.workload</id>
+            <id>mongodb-2.0.6-b.workload</id>
             <build>
                 <plugins>
                     <plugin>
@@ -111,7 +111,7 @@
             </build>
         </profile>
         <profile>
-            <id>mongodb-2.5-c.workload</id>
+            <id>mongodb-2.0.6-c.workload</id>
             <build>
                 <plugins>
                     <plugin>
@@ -144,7 +144,7 @@
             </build>
         </profile>
         <profile>
-            <id>mongodb-2.5-d.workload</id>
+            <id>mongodb-2.0.6-d.workload</id>
             <build>
                 <plugins>
                     <plugin>
@@ -177,7 +177,7 @@
             </build>
         </profile>
         <profile>
-            <id>mongodb-2.5-e.workload</id>
+            <id>mongodb-2.0.6-e.workload</id>
             <build>
                 <plugins>
                     <plugin>
@@ -210,7 +210,7 @@
             </build>
         </profile>
         <profile>
-            <id>mongodb-2.5-f.workload</id>
+            <id>mongodb-2.0.6-f.workload</id>
             <build>
                 <plugins>
                     <plugin>
@@ -243,7 +243,7 @@
             </build>
         </profile>
         <profile>
-            <id>mongodb-2.5-g.workload</id>
+            <id>mongodb-2.0.6-g.workload</id>
             <build>
                 <plugins>
                     <plugin>
@@ -275,6 +275,102 @@
                 </plugins>
             </build>
         </profile>
+                <!-- Couchbase competing test -->
+        <profile>
+            <id>mongodb-2.0.6-competition-load.workload</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.1.1</version>
+                        <executions>
+                            <execution>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <configuration>
+                                    <mainClass>com.yahoo.ycsb.Client</mainClass>
+                                    <arguments>
+										<argument>-P</argument>
+										<argument>${basedir}/workloads/competition-load.workload</argument>
+										<argument>-load</argument>
+										<argument>-s</argument>
+									</arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+			<id>mongodb-2.0.6-competition-warmup.workload</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>1.1.1</version>
+						<executions>
+							<execution>
+								<phase>test</phase>
+								<goals>
+									<goal>java</goal>
+								</goals>
+								<configuration>
+									<mainClass>com.yahoo.ycsb.Client</mainClass>
+									<arguments>
+										<argument>-P</argument>
+										<argument>${basedir}/workloads/competition-warmup.workload</argument>
+										<argument>-t</argument>
+										<argument>-target</argument>  
+										<argument>${ycsb.target}</argument>
+										<argument>-p</argument>
+										<argument>operationcount=${ycsb.operationcount}</argument>
+										<argument>-s</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+        <profile>
+			<id>mongodb-2.0.6-competition-access.workload</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>1.1.1</version>
+						<executions>
+							<execution>
+								<phase>test</phase>
+								<goals>
+									<goal>java</goal>
+								</goals>
+								<configuration>
+									<mainClass>com.yahoo.ycsb.Client</mainClass>
+									<arguments>
+										<argument>-P</argument>
+										<argument>${basedir}/workloads/competition-access.workload</argument>
+										<argument>-t</argument>
+										<argument>-target</argument>   
+										<argument>${ycsb.target}</argument>
+										<argument>-p</argument>
+										<argument>operationcount=${ycsb.operationcount}</argument>
+										<argument>-s</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
     </profiles>
     <dependencies>
         <dependency>
@@ -285,7 +381,7 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
-            <version>2.5.1</version>
+            <version>2.8.0</version>
         </dependency>
     </dependencies>
 </project>

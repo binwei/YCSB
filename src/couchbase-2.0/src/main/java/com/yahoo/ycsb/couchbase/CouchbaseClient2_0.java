@@ -2,10 +2,6 @@ package com.yahoo.ycsb.couchbase;
 
 import com.couchbase.client.CouchbaseConnectionFactory;
 import com.couchbase.client.CouchbaseConnectionFactoryBuilder;
-import com.couchbase.client.protocol.views.Query;
-import com.couchbase.client.protocol.views.View;
-import com.couchbase.client.protocol.views.ViewResponse;
-import com.couchbase.client.protocol.views.ViewRow;
 import com.yahoo.ycsb.ByteIterator;
 import com.yahoo.ycsb.DB;
 import com.yahoo.ycsb.DBException;
@@ -39,7 +35,7 @@ public class CouchbaseClient2_0 extends DB implements RangeScanOperation, Couchb
 
     public static final String SCAN_VIEW_NAME = "_all_docs";
 
-    protected View scanView;
+    // protected View scanView;
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -47,14 +43,18 @@ public class CouchbaseClient2_0 extends DB implements RangeScanOperation, Couchb
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    protected com.couchbase.client.CouchbaseClient client;
+    protected static com.couchbase.client.CouchbaseClient client;
 
     private boolean checkOperationStatus;
 
     @Override
     public void init() throws DBException {
         try {
-            client = createCouchbaseClient(getProperties());
+            synchronized (CouchbaseClient2_0.class) {
+                if (client == null) {
+                    client = createCouchbaseClient(getProperties());
+                }
+            }
             String checkOperationStatusValue = getProperties().getProperty(CHECK_OPERATION_STATUS_PROPERTY);
             checkOperationStatus = checkOperationStatusValue != null ?
                     Boolean.valueOf(checkOperationStatusValue) : CHECK_OPERATION_STATUS_DEFAULT;
@@ -174,54 +174,56 @@ public class CouchbaseClient2_0 extends DB implements RangeScanOperation, Couchb
 
     @Override
     public int scan(String table, String startKey, int limit, Set<String> fields, List<Map<String, ByteIterator>> result) {
-        try {
-            Query query = new Query();
-            query.setIncludeDocs(true);
-            query.setRangeStart(createQualifiedKey(table, startKey));
-            query.setLimit(limit);
-            scanQuery(query, result);
-            return OK;
-        } catch (Exception e) {
-            if (log.isErrorEnabled()) {
-                log.error("Error performing scan starting with a key: " + startKey, e);
-            }
-            return ERROR;
-        }
+        throw new UnsupportedOperationException("Scan not implemented");
+//        try {
+//            Query query = new Query();
+//            query.setIncludeDocs(true);
+//            query.setRangeStart(createQualifiedKey(table, startKey));
+//            query.setLimit(limit);
+//            scanQuery(query, result);
+//            return OK;
+//        } catch (Exception e) {
+//            if (log.isErrorEnabled()) {
+//                log.error("Error performing scan starting with a key: " + startKey, e);
+//            }
+//            return ERROR;
+//        }
     }
 
     @Override
     public int scan(String table, String startKey, String endKey, int limit, Set<String> fields, List<Map<String, ByteIterator>> result) {
-        try {
-            Query query = new Query();
-            query.setIncludeDocs(true);
-            query.setRangeStart(createQualifiedKey(table, startKey));
-            query.setRangeEnd(createQualifiedKey(table, endKey));
-            query.setLimit(limit);
-            scanQuery(query, result);
-            return OK;
-        } catch (Exception e) {
-            if (log.isErrorEnabled()) {
-                log.error("Error performing scan starting with a key: " + startKey, e);
-            }
-            return ERROR;
-        }
+        throw new UnsupportedOperationException("Scan not implemented");
+//        try {
+//            Query query = new Query();
+//            query.setIncludeDocs(true);
+//            query.setRangeStart(createQualifiedKey(table, startKey));
+//            query.setRangeEnd(createQualifiedKey(table, endKey));
+//            query.setLimit(limit);
+//            scanQuery(query, result);
+//            return OK;
+//        } catch (Exception e) {
+//            if (log.isErrorEnabled()) {
+//                log.error("Error performing scan starting with a key: " + startKey, e);
+//            }
+//            return ERROR;
+//        }
     }
 
-    protected void scanQuery(Query query, List<Map<String, ByteIterator>> result) throws IOException {
-        ViewResponse response = client.query(createScanView(), query);
-        for (ViewRow row : response) {
-            Map<String, ByteIterator> documentAsMap = new HashMap<String, ByteIterator>();
-            fromJson((String) row.getDocument(), null, documentAsMap);
-            result.add(documentAsMap);
-        }
-    }
-
-    protected View createScanView() {
-        if (scanView == null) {
-            scanView = client.getView(SCAN_DESIGN_DOCUMENT_NAME, SCAN_VIEW_NAME);
-        }
-        return scanView;
-    }
+//    protected void scanQuery(Query query, List<Map<String, ByteIterator>> result) throws IOException {
+//        ViewResponse response = client.query(createScanView(), query);
+//        for (ViewRow row : response) {
+//            Map<String, ByteIterator> documentAsMap = new HashMap<String, ByteIterator>();
+//            fromJson((String) row.getDocument(), null, documentAsMap);
+//            result.add(documentAsMap);
+//        }
+//    }
+//
+//    protected View createScanView() {
+//        if (scanView == null) {
+//            scanView = client.getView(SCAN_DESIGN_DOCUMENT_NAME, SCAN_VIEW_NAME);
+//        }
+//        return scanView;
+//    }
 
     @Override
     public void cleanup() throws DBException {

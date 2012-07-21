@@ -34,6 +34,11 @@ cluster_name: "Benchmarking Cluster"
 initial_token: 127605887595351923798765477786913079296
 auto_bootstrap: true
 
+# Caching options for 1.1.2
+key_cache_size_in_mb: 1024
+row_cache_size_in_mb: 6096
+row_cache_provider: SerializingCacheProvider
+
 # See http://wiki.apache.org/cassandra/HintedHandoff
 hinted_handoff_enabled: true
 # this defines the maximum amount of time a dead host will have hints
@@ -109,7 +114,7 @@ seed_provider:
           # seeds is actually a comma-delimited list of addresses.
           # Ex: "<ip1>,<ip2>,<ip3>"
           # ! Modified
-          - seeds: "rnd-nosql-node1"
+          - seeds: "ycsb-node1"
 
 # emergency pressure valve: each time heap usage after a full (CMS)
 # garbage collection is above this fraction of the max, Cassandra will
@@ -170,10 +175,6 @@ memtable_total_space_in_mb: 4048
 # waiting for a writer thread.  At a minimum, this should be set to
 # the maximum number of secondary indexes created on a single CF.
 memtable_flush_queue_size: 4
-
-# Buffer size to use when performing contiguous column slices.
-# Increase this to the size of the column slices you typically perform
-sliced_buffer_size_in_kb: 64
 
 # TCP port, for commands and data
 storage_port: 7000

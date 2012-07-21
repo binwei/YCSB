@@ -31,6 +31,8 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Vector;
 
+import static com.yahoo.ycsb.Utils.parseInt;
+
 //import org.apache.log4j.BasicConfigurator;
 
 /**
@@ -577,12 +579,12 @@ public class Client {
 
         int opcount;
         if (dotransactions) {
-            opcount = Integer.parseInt(props.getProperty(OPERATION_COUNT_PROPERTY, "0"));
+            opcount = parseInt(props.getProperty(OPERATION_COUNT_PROPERTY), 0);
         } else {
             if (props.containsKey(INSERT_COUNT_PROPERTY)) {
-                opcount = Integer.parseInt(props.getProperty(INSERT_COUNT_PROPERTY, "0"));
+                opcount = parseInt(props.getProperty(INSERT_COUNT_PROPERTY), 0);
             } else {
-                opcount = Integer.parseInt(props.getProperty(RECORD_COUNT_PROPERTY, "0"));
+                opcount = parseInt(props.getProperty(RECORD_COUNT_PROPERTY), 0);
             }
         }
 
@@ -591,7 +593,7 @@ public class Client {
         for (int threadid = 0; threadid < threadcount; threadid++) {
             DB db = null;
             try {
-                db = DBFactory.newDB(dbname, props);
+                db = new DBWrapper(DBFactory.newDB(dbname, props));
             } catch (UnknownDBException e) {
                 System.out.println("Unknown DB " + dbname);
                 System.exit(0);

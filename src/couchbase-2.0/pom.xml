@@ -15,7 +15,7 @@
 	<packaging>jar</packaging>
 	<profiles>
 		<profile>
-			<id>couchbase-2.0-preview-4-load.workload</id>
+			<id>couchbase-2.0.0-load.workload</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -50,7 +50,7 @@
 			</build>
 		</profile>
 		<profile>
-			<id>couchbase-2.0-preview-4-a.workload</id>
+			<id>couchbase-2.0.0-a.workload</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -89,7 +89,7 @@
 			</build>
 		</profile>
 		<profile>
-			<id>couchbase-2.0-preview-4-b.workload</id>
+			<id>couchbase-2.0.0-b.workload</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -129,7 +129,7 @@
 			</build>
 		</profile>
 		<profile>
-			<id>couchbase-2.0-preview-4-c.workload</id>
+			<id>couchbase-2.0.0-c.workload</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -169,7 +169,7 @@
 			</build>
 		</profile>
 		<profile>
-			<id>couchbase-2.0-preview-4-d.workload</id>
+			<id>couchbase-2.0.0-d.workload</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -209,7 +209,7 @@
 			</build>
 		</profile>
 		<profile>
-			<id>couchbase-2.0-preview-4-e.workload</id>
+			<id>couchbase-2.0.0-e.workload</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -249,7 +249,7 @@
 			</build>
 		</profile>
 		<profile>
-			<id>couchbase-2.0-preview-4-f.workload</id>
+			<id>couchbase-2.0.0-f.workload</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -289,7 +289,7 @@
 			</build>
 		</profile>
 		<profile>
-			<id>couchbase-2.0-preview-4-g.workload</id>
+			<id>couchbase-2.0.0-g.workload</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -328,6 +328,120 @@
 				</plugins>
 			</build>
 		</profile>
+                <!-- Couchbase competing test -->
+        <profile>
+            <id>couchbase-2.0.0-competition-load.workload</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.1.1</version>
+                        <executions>
+                            <execution>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <configuration>
+                                    <systemProperties>
+                                        <systemProperty>
+                                            <key>net.spy.log.LoggerImpl</key>
+                                            <value>net.spy.memcached.compat.log.Log4JLogger</value>
+                                        </systemProperty>
+                                    </systemProperties>
+                                    <mainClass>com.yahoo.ycsb.Client</mainClass>
+                                    <arguments>
+										<argument>-P</argument>
+										<argument>${basedir}/workloads/competition-load.workload</argument>
+										<argument>-load</argument>
+										<argument>-s</argument>
+									</arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+			<id>couchbase-2.0.0-competition-warmup.workload</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>1.1.1</version>
+						<executions>
+							<execution>
+								<phase>test</phase>
+								<goals>
+									<goal>java</goal>
+								</goals>
+								<configuration>
+                                    <systemProperties>
+                                        <systemProperty>
+                                            <key>net.spy.log.LoggerImpl</key>
+                                            <value>net.spy.memcached.compat.log.Log4JLogger</value>
+                                        </systemProperty>
+                                    </systemProperties>
+									<mainClass>com.yahoo.ycsb.Client</mainClass>
+									<arguments>
+										<argument>-P</argument>
+										<argument>${basedir}/workloads/competition-warmup.workload</argument>
+										<argument>-t</argument>
+										<argument>-target</argument>  
+										<argument>${ycsb.target}</argument>
+										<argument>-p</argument>
+										<argument>operationcount=${ycsb.operationcount}</argument>
+										<argument>-s</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+        <profile>
+			<id>couchbase-2.0.0-competition-access.workload</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>1.1.1</version>
+						<executions>
+							<execution>
+								<phase>test</phase>
+								<goals>
+									<goal>java</goal>
+								</goals>
+								<configuration>
+                                    <systemProperties>
+                                        <systemProperty>
+                                            <key>net.spy.log.LoggerImpl</key>
+                                            <value>net.spy.memcached.compat.log.Log4JLogger</value>
+                                        </systemProperty>
+                                    </systemProperties>
+									<mainClass>com.yahoo.ycsb.Client</mainClass>
+									<arguments>
+										<argument>-P</argument>
+										<argument>${basedir}/workloads/competition-access.workload</argument>
+										<argument>-t</argument>
+										<argument>-target</argument>   
+										<argument>${ycsb.target}</argument>
+										<argument>-p</argument>
+										<argument>operationcount=${ycsb.operationcount}</argument>
+										<argument>-s</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
 	<dependencies>
 		<dependency>
@@ -335,11 +449,16 @@
 			<artifactId>core</artifactId>
 			<version>1.0</version>
 		</dependency>
-		<dependency>
-			<groupId>couchbase</groupId>
+        <dependency>
+            <groupId>couchbase</groupId>
 			<artifactId>couchbase-client</artifactId>
-			<version>1.1-dp</version>
-		</dependency>
+			<version>1.0.2</version>
+        </dependency>
+		<!--<dependency>-->
+			<!--<groupId>couchbase</groupId>-->
+			<!--<artifactId>couchbase-client</artifactId>-->
+			<!--<version>1.1-dp</version>-->
+		<!--</dependency>-->
         <dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-mapper-asl</artifactId>

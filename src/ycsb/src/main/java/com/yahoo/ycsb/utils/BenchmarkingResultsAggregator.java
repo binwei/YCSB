@@ -266,10 +266,9 @@ public class BenchmarkingResultsAggregator {
     }
 
     public static void main(String[] args) throws Exception {
-        String base = "/Users/tazija/Projects/nosql-research/repository/docs/benchmarking";
         List<String> inputs = Arrays.asList(
-//                base + "/mysql-cluster-7.2.5/4-nodes/x-large/20-threads-raid"
-                "/Users/tazija/Downloads/ycsb"
+                "/Users/tazija/Downloads/ycsb/mongodb-2.0.6-no-replication",
+                "/Users/tazija/Downloads/ycsb/couchbase-2.0.0-no-replication"
         );
         for (String input : inputs) {
             String output = input + "-aggregated";

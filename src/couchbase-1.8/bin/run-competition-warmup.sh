@@ -8,4 +8,4 @@ workloads=("profile=couchbase-${COUCHBASE_VERSION}-competition-warmup.workload t
 
 workloads=$(array_join "${workloads[@]}")
 
-$BIN_HOME/run-workload.sh -w "$workloads" -i 1
+$BIN_HOME/run-workload.sh -w "$workloads" -i 2
