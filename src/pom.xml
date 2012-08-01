@@ -15,7 +15,8 @@
         <module>mongodb</module>
         <module>hbase</module>
         <module>riak</module>
-		<module>couchbase-1.8</module>
+        <module>memcached</module>
+        <module>couchbase-1.8</module>
 		<module>couchbase-2.0</module>
         <module>mysql-cluster</module>
         <module>mysql-sharded</module>

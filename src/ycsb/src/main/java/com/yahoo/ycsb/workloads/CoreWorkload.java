@@ -55,6 +55,7 @@ import static com.yahoo.ycsb.generator.ExponentialGenerator.EXPONENTIAL_PERCENTI
 public class CoreWorkload extends Workload {
 
     public static final int CLEANUP_INSERTED_KEYS_BATCH_SIZE = 1000;
+
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     /**

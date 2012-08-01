@@ -6,25 +6,29 @@ EXIT_INVALID_OPTION=1
 EXIT_ARGUMENT_REQUIRED=2
 
 DEFAULT_PORT=27017
-DEFAULT_PARAMETERS="--fork --logappend --rest --nojournal"
+DEFAULT_ARGUMENTS="--fork --logappend --rest --nojournal"
+
+port=$DEFAULT_PORT
+arguments="$DEFAULT_ARGUMENTS"
 
 function show_usage() {
     if [ -n "$1" ]
     then
         echo "$(basename $0): $1"
     fi
-    echo -e "usage: $(basename $0) [-r replica set name] [-p port]"
+    echo -e "usage: $(basename $0) [-r replica set name] [-p port] [-a arguments]"
 }
 
-port=$DEFAULT_PORT
-
-while getopts ":r:p:" opt; do
+while getopts ":r:p:a:" opt; do
   case $opt in
     r)
         replica_set=$OPTARG
     ;;
     p)
         port=$OPTARG
+    ;;
+    a)
+        arguments=$OPTARG
     ;;
     \?)
         (show_usage "invalid option -$OPTARG")
@@ -37,16 +41,14 @@ while getopts ":r:p:" opt; do
   esac
 done
 
-parameters="$DEFAULT_PARAMETERS"
-
 if [ ! -z "$replica_set" ]
 then
-  parameters="--replSet $replica_set $parameters"
+  arguments="--replSet $replica_set $arguments"
 fi
 
 if [ ! -z "$port" ]
 then
-  parameters="--port $port $parameters"
+  arguments="--port $port $arguments"
 fi
 
 dbpath="$MONDO_DB_DIR/mongod-$port"
@@ -54,4 +56,4 @@ mkdir -p $dbpath
 
 logpath="$MONGO_LOG_DIR/mongod-$port.log"
 
-$MONGO_HOME/bin/mongod --dbpath $dbpath --logpath $logpath $parameters
+$MONGO_HOME/bin/mongod --dbpath $dbpath --logpath $logpath $arguments

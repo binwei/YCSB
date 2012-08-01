@@ -1,0 +1,1 @@
+MOXI_VERSION=1.8

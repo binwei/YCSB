@@ -1,9 +1,9 @@
-//var replicaSet = "shard1";
-//var members = ["ycsb-node1:27017", "ycsb-node2:27018"];
-//var replicaSet = "shard2";
-//var members = ["ycsb-node2:27017", "ycsb-node1:27018"];
-//var replicaSet = "shard3";
-//var members = ["ycsb-node3:27017", "ycsb-node4:27018"];
+var replicaSet = "shard1";
+var members = ["ycsb-node1:27017", "ycsb-node2:27018"];
+var replicaSet = "shard2";
+var members = ["ycsb-node2:27017", "ycsb-node1:27018"];
+var replicaSet = "shard3";
+var members = ["ycsb-node3:27017", "ycsb-node4:27018"];
 var replicaSet = "shard4";
 var members = ["ycsb-node4:27017", "ycsb-node3:27018"];
 

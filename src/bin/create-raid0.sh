@@ -21,7 +21,7 @@ for volume in $(awk '{print $2}' ~/ec2-volumes); do \
 done
 
 sleep 10
-sudo mdadm --create /dev/md127 --level=raid0 --metadata=1.2 --chunk=256 --raid-devices=4 /dev/sdh*
+sudo mdadm --create /dev/md0 --level=raid0 --metadata=1.2 --chunk=256 --raid-devices=4 /dev/sdh*
 cat /proc/mdstat
 sudo mdadm --detail /dev/md0
 

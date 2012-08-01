@@ -277,7 +277,7 @@
         </profile>
                 <!-- Couchbase competing test -->
         <profile>
-            <id>mongodb-2.0.6-competition-load.workload</id>
+            <id>mongodb-2.2.0-rc0-competition-load.workload</id>
             <build>
                 <plugins>
                     <plugin>
@@ -306,7 +306,7 @@
             </build>
         </profile>
         <profile>
-			<id>mongodb-2.0.6-competition-warmup.workload</id>
+			<id>mongodb-2.2.0-rc0-competition-warmup.workload</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -339,7 +339,7 @@
 			</build>
 		</profile>
         <profile>
-			<id>mongodb-2.0.6-competition-access.workload</id>
+			<id>mongodb-2.2.0-rc0-competition-access.workload</id>
 			<build>
 				<plugins>
 					<plugin>

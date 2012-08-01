@@ -1,8 +1,5 @@
-db=com.yahoo.ycsb.couchbase.CouchbaseClient1_8
-couchbase.hosts=ycsb-node1,ycsb-node2,ycsb-node3,ycsb-node4
-couchbase.bucket=default
-couchbase.user=
-couchbase.password=
+db=com.yahoo.ycsb.memcached.MemcachedClient
+memcached.addresses=ycsb-node1:11211,ycsb-node2:11211,ycsb-node3:11211,ycsb-node4:11211
 memcached.timeout=60000
 memcached.checkOperationStatus=true
 table=ut

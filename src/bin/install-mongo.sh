@@ -11,6 +11,7 @@ sudo chown -R ec2-user /raid/var/lib/mongodb/ /raid/var/log/mongodb/ /var/lib/mo
 chmod 777 mongo-bin/*.sh
 
 killall -9 mongos mongod
+sudo rm -rf /raid/var/log/mongodb/* /raid/var/lib/mongodb/*
 sudo mkdir -p /raid/var/log/mongodb/ /raid/var/lib/mongodb/
 sudo chown -R ec2-user /raid/var/lib/mongodb/ /raid/var/log/mongodb/ /var/lib/mongodb/ /var/log/mongodb/
 mongo-bin/start-mongod.sh
