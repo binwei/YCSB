@@ -5,15 +5,14 @@ couchbase.user=
 couchbase.password=
 couchbase.timeout=60000
 couchbase.checkOperationStatus=false
+couchbase.readBufferSize=16384
 table=ut
 
 fieldcount=15
 fieldlength=100
-threadcount=1
-#operationcount=15000000
+threadcount=100
+operationcount=15000000
 recordcount=15000000
-insertstart=0
-insertcount=7500000
 workload=com.yahoo.ycsb.workloads.CoreWorkload
 
 requestdistribution=zipfian

@@ -6,17 +6,25 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MemcachedClient extends MemcachedClientBase {
+public class MemcachedClient extends MemcachedCompatibleClient {
+
+    @Override
+    protected MemcachedCompatibleConfig createMemcachedConfig() {
+        return new MemcachedConfig(getProperties());
+    }
 
     @Override
     protected net.spy.memcached.MemcachedClient createMemcachedClient() throws Exception {
         ConnectionFactoryBuilder connectionFactoryBuilder = new ConnectionFactoryBuilder();
-        initConnectionFactoryBuilder(connectionFactoryBuilder);
+
+        connectionFactoryBuilder.setReadBufferSize(config.getReadBufferSize());
+        connectionFactoryBuilder.setOpTimeout(config.getOpTimeout());
+        connectionFactoryBuilder.setFailureMode(config.getFailureMode());
+
         List<InetSocketAddress> addresses = new ArrayList<InetSocketAddress>();
-        String addressesValue = getProperties().getProperty(ADDRESSES_PROPERTY);
-        for (String address : addressesValue.split(",")) {
+        for (String address : config.getHosts().split(",")) {
             int colon = address.indexOf(":");
-            int port = DEFAULT_PORT;
+            int port = MemcachedConfig.DEFAULT_PORT;
             String host = address;
             if (colon != -1) {
                 port = Integer.parseInt(address.substring(colon + 1));

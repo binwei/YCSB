@@ -1,7 +1,7 @@
 db=com.yahoo.ycsb.memcached.MemcachedClient
-memcached.addresses=ycsb-node1:11211,ycsb-node2:11211,ycsb-node3:11211,ycsb-node4:11211
+memcached.hosts=ycsb-node1:11211,ycsb-node2:11211,ycsb-node3:11211,ycsb-node4:11211
 memcached.timeout=60000
-memcached.checkOperationStatus=true
+memcached.checkOperationStatus=false
 table=ut
 
 readproportion=1

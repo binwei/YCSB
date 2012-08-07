@@ -3,17 +3,23 @@ package com.yahoo.ycsb.couchbase;
 import com.couchbase.client.CouchbaseClient;
 import com.couchbase.client.CouchbaseConnectionFactory;
 import com.couchbase.client.CouchbaseConnectionFactoryBuilder;
-import com.yahoo.ycsb.DBException;
-import com.yahoo.ycsb.memcached.MemcachedClientBase;
+import com.yahoo.ycsb.memcached.MemcachedCompatibleClient;
+import com.yahoo.ycsb.memcached.MemcachedCompatibleConfig;
 import net.spy.memcached.MemcachedClient;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 @SuppressWarnings({"NullableProblems"})
-public class CouchbaseClient1_8 extends MemcachedClientBase implements CouchbaseClientProperties {
+public class CouchbaseClient1_8 extends MemcachedCompatibleClient {
+
+    private CouchbaseConfig couchbaseConfig;
+
+    @Override
+    protected MemcachedCompatibleConfig createMemcachedConfig() {
+        return couchbaseConfig = new CouchbaseConfig(getProperties());
+    }
 
     @Override
     protected MemcachedClient createMemcachedClient() throws Exception {
@@ -21,27 +27,18 @@ public class CouchbaseClient1_8 extends MemcachedClientBase implements Couchbase
     }
 
     protected CouchbaseClient createCouchbaseClient() throws Exception {
-        Properties properties = getProperties();
-        String bucket = properties.getProperty(BUCKET_PROPERTY, BUCKET_PROPERTY_DEFAULT);
-        String user = properties.getProperty(USER_PROPERTY);
-        String password = properties.getProperty(PASSWORD_PROPERTY);
+        CouchbaseConnectionFactoryBuilder builder = new CouchbaseConnectionFactoryBuilder();
+        builder.setReadBufferSize(config.getReadBufferSize());
+        builder.setOpTimeout(config.getOpTimeout());
+        builder.setFailureMode(config.getFailureMode());
 
-        CouchbaseConnectionFactoryBuilder connectionFactoryBuilder = new CouchbaseConnectionFactoryBuilder();
-        initConnectionFactoryBuilder(connectionFactoryBuilder);
         List<URI> servers = new ArrayList<URI>();
-        for (String address : getHosts(properties)) {
+        for (String address : config.getHosts().split(",")) {
             servers.add(new URI("http://" + address + ":8091/pools"));
         }
         CouchbaseConnectionFactory connectionFactory =
-                connectionFactoryBuilder.buildCouchbaseConnection(servers, bucket, user, password);
+                builder.buildCouchbaseConnection(servers,
+                        couchbaseConfig.getBucket(), couchbaseConfig.getUser(), couchbaseConfig.getPassword());
         return new com.couchbase.client.CouchbaseClient(connectionFactory);
-    }
-
-    protected static String[] getHosts(Properties properties) throws DBException {
-        String hosts = properties.getProperty(HOSTS_PROPERTY);
-        if (hosts == null) {
-            throw new DBException("Required property hosts missing for Couchbase");
-        }
-        return hosts.split(",");
     }
 }

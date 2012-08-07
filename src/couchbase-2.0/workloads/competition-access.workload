@@ -5,7 +5,7 @@ couchbase.user=
 couchbase.password=
 couchbase.timeout=60000
 couchbase.checkOperationStatus=true
-couchbase.readBufferSize=16684
+couchbase.readBufferSize=16384
 table=ut
 
 # Use less mutation ops (reads 0.6 originally) to mitigate growing disk write queue

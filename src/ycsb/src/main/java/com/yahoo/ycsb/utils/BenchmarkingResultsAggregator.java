@@ -270,7 +270,8 @@ public class BenchmarkingResultsAggregator {
                 "/Users/tazija/Downloads/ycsb/mongodb-2.0.6-write-replicas-safe-read-secondary-journaling",
                 "/Users/tazija/Downloads/ycsb/mongodb-2.0.6-write-replicas-safe-read-secondary-nojournaling",
                 "/Users/tazija/Downloads/ycsb/mongodb-2.2.0-rc0-write-replicas-safe-read-secondary-nojournaling",
-                "/Users/tazija/Downloads/ycsb/mongodb-2.2.0-rc0-write-replicas-safe-read-secondary-nojournaling-2kb"
+                "/Users/tazija/Downloads/ycsb/mongodb-2.2.0-rc0-write-replicas-safe-read-secondary-nojournaling-2kb",
+                "/Users/tazija/Downloads/ycsb/couchbase-2.0.0-replication-read-buffer-16384"
         );
         for (String input : inputs) {
             String output = input + "-aggregated";

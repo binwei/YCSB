@@ -5,6 +5,7 @@ couchbase.user=
 couchbase.password=
 couchbase.timeout=60000
 couchbase.checkOperationStatus=false
+couchbase.readBufferSize=16384
 table=ut
 
 readproportion=1

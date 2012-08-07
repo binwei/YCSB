@@ -4,8 +4,6 @@ import com.yahoo.ycsb.ByteIterator;
 import com.yahoo.ycsb.DB;
 import com.yahoo.ycsb.DBException;
 import com.yahoo.ycsb.StringByteIterator;
-import net.spy.memcached.ConnectionFactoryBuilder;
-import net.spy.memcached.FailureMode;
 import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.internal.GetFuture;
 import net.spy.memcached.internal.OperationFuture;
@@ -25,7 +23,7 @@ import java.util.*;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-public abstract class MemcachedClientBase extends DB implements MemcachedClientProperties {
+public abstract class MemcachedCompatibleClient extends DB {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -35,48 +33,30 @@ public abstract class MemcachedClientBase extends DB implements MemcachedClientP
 
     protected MemcachedClient client;
 
-    protected boolean checkOperationStatus;
+    protected MemcachedCompatibleConfig config;
+
+    private boolean checkOperationStatus;
+
+    private long shutdownTimeoutMillis;
+
+    private int objectExpirationTime;
 
     @Override
     public void init() throws DBException {
         try {
+            config = createMemcachedConfig();
             client = createMemcachedClient();
-            String checkOperationStatusValue = getProperties().getProperty(CHECK_OPERATION_STATUS_PROPERTY);
-            checkOperationStatus = checkOperationStatusValue != null ?
-                    Boolean.valueOf(checkOperationStatusValue) : CHECK_OPERATION_STATUS_DEFAULT;
+            checkOperationStatus = config.getCheckOperationStatus();
+            objectExpirationTime = config.getObjectExpirationTime();
+            shutdownTimeoutMillis = config.getShutdownTimeoutMillis();
         } catch (Exception e) {
             throw new DBException(e);
         }
     }
 
+    protected abstract MemcachedCompatibleConfig createMemcachedConfig();
+
     protected abstract MemcachedClient createMemcachedClient() throws Exception;
-
-
-    protected void initConnectionFactoryBuilder(ConnectionFactoryBuilder connectionFactoryBuilder) {
-        Properties properties = getProperties();
-        String timeoutValue = properties.getProperty(TIMEOUT_PROPERTY);
-        int timeout = DEFAULT_TIMEOUT;
-        if (timeoutValue != null && timeoutValue.length() > 0) {
-            timeout = Integer.parseInt(timeoutValue);
-        }
-        String failureModeValue = properties.getProperty(FAILURE_MODE_PROPERTY);
-        FailureMode failureMode = FAILURE_MODE_PROPERTY_DEFAULT;
-        if (failureModeValue != null) {
-            failureMode = FailureMode.valueOf(failureModeValue);
-        }
-        String readBufferSizeValue = properties.getProperty(READ_BUFFER_SIZE_PROPERTY);
-        int readBufferSize;
-        if (readBufferSizeValue != null) {
-            readBufferSize = Integer.parseInt(readBufferSizeValue);
-        } else {
-            readBufferSize = READ_BUFFER_SIZE_DEFAULT;
-        }
-
-        connectionFactoryBuilder.setReadBufferSize(readBufferSize);
-        connectionFactoryBuilder.setOpTimeout(timeout);
-        connectionFactoryBuilder.setFailureMode(failureMode);
-    }
-
 
     @Override
     public int read(String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
@@ -102,13 +82,13 @@ public abstract class MemcachedClientBase extends DB implements MemcachedClientP
 
     @Override
     public int update(String table, String key, Map<String, ByteIterator> values) {
-        String qualifiedKey = createQualifiedKey(table, key);
+        key = createQualifiedKey(table, key);
         try {
-            OperationFuture<Boolean> future = client.replace(qualifiedKey, OBJECT_EXPIRATION_TIME, toJson(values));
+            OperationFuture<Boolean> future = client.replace(key, objectExpirationTime, toJson(values));
             return getReturnCode(future);
         } catch (Exception e) {
             if (log.isErrorEnabled()) {
-                log.error("Error updating value with key: " + qualifiedKey, e);
+                log.error("Error updating value with key: " + key, e);
             }
             return ERROR;
         }
@@ -116,9 +96,9 @@ public abstract class MemcachedClientBase extends DB implements MemcachedClientP
 
     @Override
     public int insert(String table, String key, Map<String, ByteIterator> values) {
-        String qualifiedKey = createQualifiedKey(table, key);
+        key = createQualifiedKey(table, key);
         try {
-            OperationFuture<Boolean> future = client.add(qualifiedKey, OBJECT_EXPIRATION_TIME, toJson(values));
+            OperationFuture<Boolean> future = client.add(key, objectExpirationTime, toJson(values));
             return getReturnCode(future);
         } catch (Exception e) {
             if (log.isErrorEnabled()) {
@@ -130,9 +110,9 @@ public abstract class MemcachedClientBase extends DB implements MemcachedClientP
 
     @Override
     public int delete(String table, String key) {
-        String qualifiedKey = createQualifiedKey(table, key);
+        key = createQualifiedKey(table, key);
         try {
-            OperationFuture<Boolean> future = client.delete(qualifiedKey);
+            OperationFuture<Boolean> future = client.delete(key);
             return getReturnCode(future);
         } catch (Exception e) {
             if (log.isErrorEnabled()) {
@@ -153,7 +133,7 @@ public abstract class MemcachedClientBase extends DB implements MemcachedClientP
     @Override
     public void cleanup() throws DBException {
         if (client != null) {
-            client.shutdown(SHUTDOWN_TIMEOUT_MILLIS, MILLISECONDS);
+            client.shutdown(shutdownTimeoutMillis, MILLISECONDS);
         }
     }
 
