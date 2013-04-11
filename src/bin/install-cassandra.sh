@@ -1,10 +1,10 @@
 #!/bin/sh
 
-CASSANDRA_VERSION=1.1.2
+export CASSANDRA_VERSION=1.2.3
 
 wget http://www.us.apache.org/dist/cassandra/$CASSANDRA_VERSION/apache-cassandra-$CASSANDRA_VERSION-bin.tar.gz
 tar -xf ./apache-cassandra-$CASSANDRA_VERSION-bin.tar.gz
-rm ./apache-cassandra-$CASSANDRA_VERSION-bin.tar.gz
+#rm ./apache-cassandra-$CASSANDRA_VERSION-bin.tar.gz
 sudo mv ./apache-cassandra-$CASSANDRA_VERSION /usr/lib
 sudo ln -s /usr/lib/apache-cassandra-$CASSANDRA_VERSION /usr/lib/apache-cassandra
 

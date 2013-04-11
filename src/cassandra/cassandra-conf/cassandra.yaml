@@ -114,7 +114,7 @@ seed_provider:
           # seeds is actually a comma-delimited list of addresses.
           # Ex: "<ip1>,<ip2>,<ip3>"
           # ! Modified
-          - seeds: "ycsb-node1"
+          - seeds: "rnd-nosql-node1"
 
 # emergency pressure valve: each time heap usage after a full (CMS)
 # garbage collection is above this fraction of the max, Cassandra will

@@ -30,7 +30,7 @@ table=UserKeyspace
 
 fieldcount=10
 fieldlength=100
-threadcount=20
+threadcount=100
 operationcount=10000
 recordcount=100000000
 workload=com.yahoo.ycsb.workloads.CoreWorkload
