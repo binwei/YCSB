@@ -9,7 +9,7 @@ export EC2_AVAILABILITY_ZONE=`wget -q -O - http://169.254.169.254/latest/meta-da
 
 # create volumes in the availabitity zone $EC2_AVAILABILITY_ZONE
 for x in {1..4}; do \
-    ec2-create-volume --size 5 --availability-zone $EC2_AVAILABILITY_ZONE; \
+    ec2-create-volume --size 15 --availability-zone $EC2_AVAILABILITY_ZONE; \
 done > ~/ec2-volumes
 
 # attache the volumes to the instance $EC2_INSTANCE_ID
@@ -28,10 +28,10 @@ sudo mdadm --detail /dev/md0
 sudo blockdev --setra 65536 /dev/md0
 sudo mkdir /etc/mdadm/
 sudo mdadm -Es | sudo tee /etc/mdadm/mdadm.conf
-sudo mkfs.xfs /dev/md127
+sudo mkfs.xfs /dev/md0
 
 # Auto-mounting on reboot
-echo "/dev/md127 /raid xfs noatime,noexec,nodiratime 0 0" | sudo tee -a /etc/fstab
+echo "/dev/md0 /raid xfs noatime,noexec,nodiratime 0 0" | sudo tee -a /etc/fstab
 
 # Mount and format the drive
 sudo mkdir /raid

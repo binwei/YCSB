@@ -5,7 +5,7 @@ sudo yum -y install git
 wget http://www.us.apache.org/dist/maven/binaries/apache-maven-3.0.4-bin.tar.gz
 chmod 700 apache-maven-3.0.4-bin.tar.gz
 tar xzf apache-maven-3.0.4-bin.tar.gz
-rm -f apache-maven-3.0.4-bin.tar.gz
+#rm -f apache-maven-3.0.4-bin.tar.gz
 sudo mv ./apache-maven-3.0.4/ /usr/lib
 sudo ln -s /usr/lib/apache-maven-3.0.4/ /usr/lib/apache-maven
 

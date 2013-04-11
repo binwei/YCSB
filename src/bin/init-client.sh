@@ -9,7 +9,8 @@ rm jdk-6u33-linux-x64.bin
 sudo alternatives --install /usr/bin/java java $JAVA_HOME/bin/java 2
 sudo alternatives --config java
 
-wget http://apache.mirrors.pair.com/maven/binaries/apache-maven-3.0.4-bin.tar.gz
+wget http://www.us.apache.org/dist/maven/maven-3/3.0.4/binaries/apache-maven-3.0.4-bin.tar.gz
+#http://apache.mirrors.pair.com/maven/binaries/apache-maven-3.0.4-bin.tar.gz
 chmod 700 apache-maven-3.0.4-bin.tar.gz
 tar xzf apache-maven-3.0.4-bin.tar.gz
 rm apache-maven-3.0.4-bin.tar.gz
