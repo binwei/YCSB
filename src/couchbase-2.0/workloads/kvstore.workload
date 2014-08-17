@@ -1,0 +1,23 @@
+# KVStore Workload:
+
+db=com.walmart.labs.ycsb.KVCouchbaseClient
+table=ut
+
+fieldcount=1
+fieldlength=100000
+threadcount=1
+operationcount=10000
+recordcount=1000000
+workload=com.yahoo.ycsb.workloads.CoreWorkload
+
+# specify config for couchbase cache-client
+kvstore.localConfigLocation=kvstore-ingestion/src/main/config
+
+readallfields=true
+
+readproportion=1
+updateproportion=0
+scanproportion=0
+insertproportion=0
+
+requestdistribution=zipfian
